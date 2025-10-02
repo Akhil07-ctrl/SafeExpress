@@ -15,7 +15,10 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -31,7 +34,7 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // change to frontend URL in production
+    origin: process.env.FRONTEND_URL || '*',
     methods: ['GET', 'POST']
   }
 });

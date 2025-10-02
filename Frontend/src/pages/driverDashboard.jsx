@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
 import L from "leaflet";
 import Navbar from "../components/layout/navbar";
 
-const socket = io("https://safeexpress.onrender.com");
+const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
 
 // Custom driver icon
 const driverIcon = new L.Icon({
