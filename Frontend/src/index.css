@@ -1,0 +1,14 @@
+/* Leaflet CSS */
+@import url('https://unpkg.com/leaflet@1.9.3/dist/leaflet.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Keep Leaflet container sizing */
+.leaflet-container {
+	height: 400px;
+	width: 100%;
+	margin-top: 10px;
+}
+
