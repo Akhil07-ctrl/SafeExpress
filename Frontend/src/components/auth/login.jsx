@@ -1,6 +1,8 @@
 import { useState } from "react";
-import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+import api from "../../utils/api";
 
 const Login = ({ setUser }) => {
   const navigate = useNavigate();
@@ -14,18 +16,20 @@ const Login = ({ setUser }) => {
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user);
 
+      toast.success("Login successful!");
       // Redirect based on role
       const role = (res.data.user.role || '').toLowerCase();
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "driver") navigate("/driver/dashboard");
       else navigate("/customer/dashboard");
     } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid credentials");
       console.error(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4" style={{ backgroundImage: "url('https://res.cloudinary.com/dgsmgz8zl/image/upload/v1759471113/Gemini_Generated_Image_mylwunmylwunmylw_zac7dw.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="w-full max-w-md bg-white shadow-xl rounded-xl p-8">
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">Sign in</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../utils/api";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from "recharts";
+
+import api from "../utils/api";
 
 const AdminReports = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const AdminReports = () => {
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-8">
       <div className="flex items-center gap-4">
-        <button 
+        <button
           onClick={() => navigate('/admin/dashboard')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
         >
@@ -48,7 +49,6 @@ const AdminReports = () => {
           </svg>
           Back to Dashboard
         </button>
-        {/* <h2 className="text-2xl font-semibold">Admin Reports</h2> */}
       </div>
 
       <section className="bg-white rounded-xl shadow p-5">

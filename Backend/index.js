@@ -8,6 +8,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const deliveryRoutes = require('./routes/deliveryRoutes');
+const orderRequestRoutes = require('./routes/orderRequestRoutes');
 
 dotenv.config({ override: true });
 connectDB();
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/deliveries', deliveryRoutes);
+app.use('/api/order-requests', orderRequestRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
@@ -73,6 +75,22 @@ io.on('connection', (socket) => {
     io.to(data.deliveryId).emit('customerLocationUpdate', data);
   });
 
+  // Admin joins order requests room
+  socket.on('joinOrderRequests', () => {
+    socket.join('orderRequests');
+    console.log('Admin joined order requests room');
+  });
+
+  // Notify about new order request
+  socket.on('newOrderRequest', (data) => {
+    io.to('orderRequests').emit('orderRequestCreated', data);
+  });
+
+  // Notify about order request status update
+  socket.on('orderRequestUpdate', (data) => {
+    io.to('orderRequests').emit('orderRequestStatusChanged', data);
+  });
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
@@ -82,4 +100,4 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-module.exports = app;
+module.exports = { app, io };

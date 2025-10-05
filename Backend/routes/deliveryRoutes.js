@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   createDelivery,
   getAllDeliveries,
-  updateDeliveryStatus, 
+  updateDeliveryStatus,
   avgDeliveryTimePerDriver,
   vehicleUtilization,
   getMyDeliveries,

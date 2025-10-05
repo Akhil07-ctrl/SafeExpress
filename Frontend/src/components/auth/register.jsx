@@ -1,6 +1,8 @@
 import { useState } from "react";
-import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+import api from "../../utils/api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -18,16 +20,18 @@ const Register = () => {
         payload.secretCode = secretCode;
       }
       await api.post("/auth/register", payload);
+      toast.success('User registered successfully');
       console.log("Registration successful! Please login.");
       navigate("/login");
     } catch (err) {
       const serverMsg = err.response?.data?.message || err.response?.data?.msg;
-      console.error(serverMsg || "Error registering user");
+      console.error(err);
+      toast.error(serverMsg || "Registration failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4" style={{ backgroundImage: "url('https://res.cloudinary.com/dgsmgz8zl/image/upload/v1759470817/ChatGPT_Image_Oct_3_2025_11_23_07_AM_haekyu.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="w-full max-w-md bg-white shadow-xl rounded-xl p-8">
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">Create your account</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

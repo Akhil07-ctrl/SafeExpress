@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import Register from "../components/auth/register";
 import Login from "../components/auth/login";
 import AdminDashboard from "../pages/adminDashboard";
 import AdminReports from "../pages/adminReports";
+import AdminOrderRequests from "../pages/adminOrderRequests";
 import DriverDashboard from "../pages/driverDashboard";
 import CustomerDashboard from "../pages/customerDashboard";
+import CustomerOrderRequests from "../pages/customerOrderRequests";
 import ProtectedRoute from "../components/protectedRoute/protectedRoute";
 import api from "../utils/api";
 
@@ -54,11 +57,10 @@ const AppRoutes = () => {
             user ? <Navigate to={getDashboardRoute(user.role)} /> : <Navigate to="/login" />
           }
         />
-
         {/* Authentication */}
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login setUser={setUser} />} />
 
+        <Route path="/login" element={<Login setUser={setUser} />} />
         {/* Admin */}
         <Route
           path="/admin/dashboard"
@@ -70,6 +72,7 @@ const AppRoutes = () => {
         />
         {/* Backward compatible alias */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+
         <Route
           path="/admin/reports"
           element={
@@ -78,7 +81,14 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/admin/order-requests"
+          element={
+            <ProtectedRoute user={user} allowedRoles={["admin"]}>
+              <AdminOrderRequests user={user} />
+            </ProtectedRoute>
+          }
+        />
         {/* Driver */}
         <Route
           path="/driver/dashboard"
@@ -90,7 +100,6 @@ const AppRoutes = () => {
         />
         {/* Backward compatible alias */}
         <Route path="/driver" element={<Navigate to="/driver/dashboard" replace />} />
-
         {/* Customer */}
         <Route
           path="/customer/dashboard"
@@ -100,9 +109,16 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/customer/order-requests"
+          element={
+            <ProtectedRoute user={user} allowedRoles={["customer"]}>
+              <CustomerOrderRequests user={user} />
+            </ProtectedRoute>
+          }
+        />
         {/* Backward compatible alias */}
         <Route path="/customer" element={<Navigate to="/customer/dashboard" replace />} />
-
         {/* Catch all - redirect unknown routes */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

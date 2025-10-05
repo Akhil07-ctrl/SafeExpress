@@ -10,5 +10,16 @@
 	height: 400px;
 	width: 100%;
 	margin-top: 10px;
+	position: relative;
+	z-index: 1;
 }
 
+/* Ensure Leaflet panes don't overlap modals */
+.leaflet-pane {
+	z-index: auto !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+	z-index: 10 !important;
+}

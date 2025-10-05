@@ -60,7 +60,6 @@ const createDelivery = async (req, res) => {
 
     // Update vehicle status
     await Vehicle.findByIdAndUpdate(assignedVehicle, { status: "assigned" });
-
     res.status(201).json(delivery);
   } catch (error) {
     res.status(500).json({ message: error.message });

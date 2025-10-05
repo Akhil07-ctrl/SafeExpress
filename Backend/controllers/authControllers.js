@@ -35,7 +35,7 @@ const register = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role
-         });
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -79,12 +79,12 @@ const login = async (req, res) => {
 };
 
 const getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select("-password");
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch user" });
-  }
+    try {
+        const user = await User.findById(req.user._id).select("-password");
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch user" });
+    }
 };
-    
+
 module.exports = { register, login, getCurrentUser };
