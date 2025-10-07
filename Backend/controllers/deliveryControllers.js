@@ -13,6 +13,7 @@ const createDelivery = async (req, res) => {
       assignedDriver,
       assignedVehicle,
       customerName,
+      customerMobile,
       pickupTime,
       dropTime,
     } = req.body;
@@ -54,6 +55,7 @@ const createDelivery = async (req, res) => {
       assignedDriver,
       assignedVehicle,
       customerName,
+      customerMobile,
       pickupTime: start,
       dropTime: end,
     });
@@ -134,9 +136,6 @@ const getDeliveryTrack = async (req, res) => {
   }
 };
 
-
-// controllers/deliveryController.js
-
 // Average delivery time per driver
 const avgDeliveryTimePerDriver = async (req, res) => {
   try {
@@ -153,7 +152,6 @@ const avgDeliveryTimePerDriver = async (req, res) => {
 
     // Populate driver name
     const populated = await User.populate(result, { path: "_id", select: "name" });
-
     res.json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -175,7 +173,6 @@ const vehicleUtilization = async (req, res) => {
 
     // Populate vehicle number
     const populated = await Vehicle.populate(result, { path: "_id", select: "numberPlate type" });
-
     res.json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });

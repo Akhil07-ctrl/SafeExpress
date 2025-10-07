@@ -1,7 +1,7 @@
 const Vehicle = require("../models/vehicle.js");
 
 // Add new vehicle (Admin only)
-const addVehicle = async (req, res) => {
+exports.addVehicle = async (req, res) => {
   try {
     const { numberPlate, type, capacity } = req.body;
 
@@ -18,7 +18,7 @@ const addVehicle = async (req, res) => {
 };
 
 // Get all vehicles
-const getVehicles = async (req, res) => {
+exports.getVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find().populate("assignedDriver", "name email");
     res.json(vehicles);
@@ -28,7 +28,7 @@ const getVehicles = async (req, res) => {
 };
 
 // Get vehicles for a specific driver
-const getDriverVehicles = async (req, res) => {
+exports.getDriverVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ assignedDriver: req.user._id });
     res.json(vehicles);
@@ -36,5 +36,3 @@ const getDriverVehicles = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-module.exports = { addVehicle, getVehicles, getDriverVehicles };

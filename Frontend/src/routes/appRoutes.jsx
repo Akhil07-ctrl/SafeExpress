@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+import WelcomePage from "../components/layout/welcomePage";
 import Register from "../components/auth/register";
 import Login from "../components/auth/login";
+import ForgotPassword from "../components/auth/forgotPassword";
+import ResetPassword from "../components/auth/resetPassword";
 import AdminDashboard from "../pages/adminDashboard";
 import AdminReports from "../pages/adminReports";
 import AdminOrderRequests from "../pages/adminOrderRequests";
@@ -38,29 +41,20 @@ const AppRoutes = () => {
     </div>
   );
 
-  // Function to redirect based on role
-  const getDashboardRoute = (role) => {
-    const r = (role || '').toLowerCase();
-    if (r === "admin") return "/admin/dashboard";
-    if (r === "driver") return "/driver/dashboard";
-    if (r === "customer") return "/customer/dashboard";
-    return "/login"; // default fallback
-  };
+
 
   return (
     <Router>
       <Routes>
         {/* Default route */}
-        <Route
-          path="/"
-          element={
-            user ? <Navigate to={getDashboardRoute(user.role)} /> : <Navigate to="/login" />
-          }
-        />
+        <Route path="/" element={<WelcomePage />} />
         {/* Authentication */}
         <Route path="/register" element={<Register />} />
-
         <Route path="/login" element={<Login setUser={setUser} />} />
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         {/* Admin */}
         <Route
           path="/admin/dashboard"
@@ -70,8 +64,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        {/* Backward compatible alias */}
-        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
         <Route
           path="/admin/reports"
@@ -98,8 +90,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        {/* Backward compatible alias */}
-        <Route path="/driver" element={<Navigate to="/driver/dashboard" replace />} />
         {/* Customer */}
         <Route
           path="/customer/dashboard"
@@ -117,8 +107,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        {/* Backward compatible alias */}
-        <Route path="/customer" element={<Navigate to="/customer/dashboard" replace />} />
         {/* Catch all - redirect unknown routes */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

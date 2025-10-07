@@ -1,14 +1,22 @@
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
-import L from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from "react-leaflet";
 import { toast } from "react-toastify";
 
 import api from "../utils/api";
 import Navbar from "../components/layout/navbar";
+import { getRoute, getBoundsForCoordinates, createCustomIcon, getStatusColor } from "../utils/mapUtils";
+import { validateVehicleForm, validateDeliveryForm } from "../utils/validation";
 
 const AdminDashboard = ({ user }) => {
+  // Data states
   const [vehicles, setVehicles] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
+  const [activeDeliveries, setActiveDeliveries] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  // UI states
+  const [mapBounds, setMapBounds] = useState(null);
+  const [routeDetails, setRouteDetails] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   // Form states
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [vehicleType, setVehicleType] = useState("");
@@ -26,15 +34,26 @@ const AdminDashboard = ({ user }) => {
   const [assignedDriver, setAssignedDriver] = useState("");
   const [assignedVehicle, setAssignedVehicle] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerMobile, setCustomerMobile] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [dropTime, setDropTime] = useState("");
-  const [drivers, setDrivers] = useState([]);
 
-  const pinIcon = new L.Icon({
-    iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-  });
+  const fetchDeliveryRoute = async (delivery) => {
+    if (!delivery) return;
+    try {
+      const route = await getRoute(
+        delivery.pickupCords.lat,
+        delivery.pickupCords.lng,
+        delivery.dropCords.lat,
+        delivery.dropCords.lng
+      );
+      if (route) {
+        setRouteDetails(prev => ({ ...prev, [delivery._id]: route }));
+      }
+    } catch (error) {
+      console.error('Error calculating route:', error);
+    }
+  };
 
   const ClickSetter = () => {
     useMapEvents({
@@ -53,17 +72,35 @@ const AdminDashboard = ({ user }) => {
   };
   // Fetch all vehicles and deliveries
   const fetchData = async () => {
+    setIsLoading(true);
     try {
-      const vehiclesRes = await api.get("/vehicles");
+      const [vehiclesRes, deliveriesRes, driversRes] = await Promise.all([
+        api.get("/vehicles"),
+        api.get("/deliveries"),
+        api.get("/auth/drivers")
+      ]);
+
       setVehicles(vehiclesRes.data);
-
-      const deliveriesRes = await api.get("/deliveries");
       setDeliveries(deliveriesRes.data);
-
-      const driversRes = await api.get("/auth/drivers"); // endpoint to fetch all drivers
       setDrivers(driversRes.data);
+
+      // Filter active deliveries
+      const activeDelivs = deliveriesRes.data.filter(d => d.status === 'on route');
+      setActiveDeliveries(activeDelivs);
+
+      // Set map bounds if there are active deliveries
+      if (activeDelivs.length > 0) {
+        const coordinates = activeDelivs.flatMap(delivery => [
+          { lat: delivery.pickupCords.lat, lng: delivery.pickupCords.lng },
+          { lat: delivery.dropCords.lat, lng: delivery.dropCords.lng }
+        ]);
+        setMapBounds(getBoundsForCoordinates(coordinates));
+      }
     } catch (err) {
       console.error(err);
+      toast.error(err.response?.data?.message || 'Error fetching data');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,6 +108,12 @@ const AdminDashboard = ({ user }) => {
     fetchData();
   }, []);
 
+  // Fetch routes for active deliveries
+  useEffect(() => {
+    activeDeliveries.forEach(fetchDeliveryRoute);
+  }, [activeDeliveries]);
+
+  // Calculate statistics
   const totalVehicles = vehicles.length;
   const totalDeliveries = deliveries.length;
   const pendingCount = deliveries.filter(d => d.status === 'pending').length;
@@ -80,6 +123,19 @@ const AdminDashboard = ({ user }) => {
   // Add Vehicle
   const handleAddVehicle = async (e) => {
     e.preventDefault();
+
+    const formValues = {
+      vehicleNumber,
+      vehicleType,
+      capacity: vehicleCapacity
+    };
+
+    const errors = validateVehicleForm(formValues);
+    if (Object.keys(errors).length > 0) {
+      Object.values(errors).forEach(error => toast.error(error));
+      return;
+    }
+
     try {
       await api.post("/vehicles", { numberPlate: vehicleNumber, type: vehicleType, capacity: Number(vehicleCapacity) });
       console.log("Vehicle added successfully!");
@@ -97,6 +153,28 @@ const AdminDashboard = ({ user }) => {
   // Create Delivery
   const handleCreateDelivery = async (e) => {
     e.preventDefault();
+
+    const formValues = {
+      pickupLocation,
+      dropLocation,
+      pickupLat,
+      pickupLng,
+      dropLat,
+      dropLng,
+      assignedDriver,
+      assignedVehicle,
+      customerName,
+      customerMobile,
+      pickupTime,
+      dropTime
+    };
+
+    const errors = validateDeliveryForm(formValues);
+    if (Object.keys(errors).length > 0) {
+      Object.values(errors).forEach(error => toast.error(error));
+      return;
+    }
+
     try {
       await api.post("/deliveries", {
         pickupLocation,
@@ -106,11 +184,12 @@ const AdminDashboard = ({ user }) => {
         assignedDriver,
         assignedVehicle,
         customerName,
+        customerMobile,
         pickupTime,
         dropTime,
       });
       console.log("Delivery created successfully!");
-      setPickupLocation(""); setDropLocation(""); setPickupLat(""); setPickupLng(""); setDropLat(""); setDropLng(""); setAssignedDriver(""); setAssignedVehicle(""); setCustomerName(""); setPickupTime(""); setDropTime("");
+      setPickupLocation(""); setDropLocation(""); setPickupLat(""); setPickupLng(""); setDropLat(""); setDropLng(""); setAssignedDriver(""); setAssignedVehicle(""); setCustomerName(""); setCustomerMobile(""); setPickupTime(""); setDropTime("");
       fetchData();
       toast.success("Delivery created successfully!");
     } catch (err) {
@@ -136,6 +215,17 @@ const AdminDashboard = ({ user }) => {
       console.error(e);
     }
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar user={user} />
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -167,7 +257,88 @@ const AdminDashboard = ({ user }) => {
           </div>
         </div>
 
-        {/* Add Vehicle */}
+        {/* Delivery Map Overview */}
+        <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Active Deliveries Map</h3>
+          <div className="h-[500px] rounded-lg overflow-hidden border border-gray-200">
+            <MapContainer
+              center={[17.385044, 78.486671]}
+              zoom={12}
+              className="h-full w-full"
+              bounds={mapBounds}
+              whenCreated={(map) => {
+                if (mapBounds) {
+                  map.fitBounds(mapBounds);
+                }
+              }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+              {activeDeliveries.map(delivery => (
+                <div key={delivery._id}>
+                  {/* Pickup Marker */}
+                  <Marker
+                    position={[delivery.pickupCords.lat, delivery.pickupCords.lng]}
+                    icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
+                    eventHandlers={{
+                      click: () => fetchDeliveryRoute(delivery)
+                    }}
+                  >
+                    <Popup>
+                      <div className="text-sm">
+                        <h3 className="font-medium">Pickup: {delivery.pickupLocation}</h3>
+                        <p>Customer: {delivery.customerName}</p>
+                        <p>Time: {new Date(delivery.pickupTime).toLocaleString()}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+
+                  {/* Drop Marker */}
+                  <Marker
+                    position={[delivery.dropCords.lat, delivery.dropCords.lng]}
+                    icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
+                  >
+                    <Popup>
+                      <div className="text-sm">
+                        <h3 className="font-medium">Drop: {delivery.dropLocation}</h3>
+                        <p>Status: {delivery.status}</p>
+                        <p>Time: {new Date(delivery.dropTime).toLocaleString()}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+
+                  {/* Route Line */}
+                  {routeDetails[delivery._id]?.route && (
+                    <Polyline
+                      positions={routeDetails[delivery._id].route.map(([lng, lat]) => [lat, lng])}
+                      color={getStatusColor(delivery.status)}
+                      weight={3}
+                      opacity={0.6}
+                    />
+                  )}
+                </div>
+              ))}
+            </MapContainer>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getStatusColor('pending') }} />
+              <span>Pending</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getStatusColor('on route') }} />
+              <span>On Route</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getStatusColor('delivered') }} />
+              <span>Delivered</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Add Vehicle Modal */}
         <section className="bg-white rounded-xl shadow p-5">
           <h3 className="text-lg font-medium mb-4">Add Vehicle</h3>
           <form onSubmit={handleAddVehicle} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -185,11 +356,12 @@ const AdminDashboard = ({ user }) => {
               required
               className="rounded-lg border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand"
             >
-              <option value="">Select Type</option>
-              <option value="car">Car</option>
-              <option value="truck">Truck</option>
-              <option value="bike">Bike</option>
-              <option value="van">Van</option>
+              <option value="">Select Vehicle Type</option>
+              <option value="tata 407">Tata 407</option>
+              <option value="ashok leyland ecomet">Ashok Leyland Ecomet</option>
+              <option value="mahindra supro maxi truck">Mahindra Supro Maxi Truck</option>
+              <option value="eicher pro 3015">Eicher Pro 3015</option>
+              <option value="bharath benz 2523r">Bharath Benz 2523R</option>
             </select>
             <input
               placeholder="Capacity (kg)"
@@ -229,6 +401,13 @@ const AdminDashboard = ({ user }) => {
               required
               className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
             />
+            <input
+              placeholder="Customer Mobile"
+              value={customerMobile}
+              onChange={(e) => setCustomerMobile(e.target.value)}
+              required
+              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+            />
             <select
               placeholder="Vehicle Type"
               value={vehicleType}
@@ -236,7 +415,7 @@ const AdminDashboard = ({ user }) => {
               required
               className="rounded-lg border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand"
             >
-              <option value="">Select Type</option>
+              <option value="">Select Vehicle Type</option>
               <option value="car">Car</option>
               <option value="truck">Truck</option>
               <option value="bike">Bike</option>
@@ -268,18 +447,38 @@ const AdminDashboard = ({ user }) => {
                   <button type="button" onClick={() => geocode(searchDrop, 'drop')} className="bg-gray-900 text-white rounded-lg px-3">Find</button>
                 </div>
               </div>
-              <div className="rounded-lg overflow-hidden border border-gray-200">
-                <MapContainer center={[17.385044, 78.486671]} zoom={11} className="leaflet-container">
+              <div className="rounded-lg overflow-hidden border border-gray-200 h-[300px]">
+                <MapContainer
+                  center={[17.385044, 78.486671]}
+                  zoom={11}
+                  className="h-full w-full"
+                >
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <ClickSetter />
                   {pickupLat && pickupLng && (
-                    <Marker icon={pinIcon} position={[Number(pickupLat), Number(pickupLng)]}>
-                      <Popup>Pickup</Popup>
+                    <Marker
+                      icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
+                      position={[Number(pickupLat), Number(pickupLng)]}
+                    >
+                      <Popup>
+                        <div className="text-sm">
+                          <h3 className="font-medium">Pickup Location</h3>
+                          <p>Coordinates: {pickupLat}, {pickupLng}</p>
+                        </div>
+                      </Popup>
                     </Marker>
                   )}
                   {dropLat && dropLng && (
-                    <Marker icon={pinIcon} position={[Number(dropLat), Number(dropLng)]}>
-                      <Popup>Drop</Popup>
+                    <Marker
+                      icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
+                      position={[Number(dropLat), Number(dropLng)]}
+                    >
+                      <Popup>
+                        <div className="text-sm">
+                          <h3 className="font-medium">Drop Location</h3>
+                          <p>Coordinates: {dropLat}, {dropLng}</p>
+                        </div>
+                      </Popup>
                     </Marker>
                   )}
                 </MapContainer>
@@ -389,7 +588,9 @@ const AdminDashboard = ({ user }) => {
                     <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
                     <td className="px-4 py-2">{d.customerName}</td>
                     <td className="px-4 py-2">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{d.status}</span>
+                      {d.status === "pending" && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span>}
+                      {d.status === "on route" && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span>}
+                      {d.status === "delivered" && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span>}
                     </td>
                   </tr>
                 ))}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { io } from "socket.io-client";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 
 import Navbar from "../components/layout/navbar";
 import api from "../utils/api";
+import { getRoute, getBoundsForCoordinates, getStatusColor, createCustomIcon } from "../utils/mapUtils";
 
 const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
 
@@ -18,6 +19,9 @@ const driverIcon = new L.Icon({
 const DriverDashboard = ({ user }) => {
   const [deliveries, setDeliveries] = useState([]);
   const [currentLocation, setCurrentLocation] = useState({ lat: 0, lng: 0 });
+  const [driverStatus, setDriverStatus] = useState('unavailable');
+  const [routeDetails, setRouteDetails] = useState(null);
+  const [mapBounds, setMapBounds] = useState(null);
 
   // Calculate stats
   const totalDeliveries = deliveries.length;
@@ -35,9 +39,62 @@ const DriverDashboard = ({ user }) => {
     }
   };
 
+  // Fetch driver's current status
+  const fetchDriverStatus = useCallback(async () => {
+    try {
+      const res = await api.get(`/drivers/status/${user.id}`);
+      setDriverStatus(res.data.driverStatus);
+    } catch (err) {
+      console.error('Error fetching driver status:', err);
+    }
+  }, [user.id]);
+
+  // Toggle driver's availability status
+  const toggleDriverStatus = async () => {
+    try {
+      const newStatus = driverStatus === 'available' ? 'unavailable' : 'available';
+      const res = await api.put('/drivers/status', { driverStatus: newStatus });
+      setDriverStatus(res.data.driverStatus);
+      toast.success(`Status updated to ${res.data.driverStatus}`);
+    } catch (err) {
+      console.error('Error updating driver status:', err);
+      toast.error('Failed to update status');
+    }
+  };
+
   useEffect(() => {
     fetchDeliveries();
-  }, []);
+    fetchDriverStatus();
+  }, [fetchDriverStatus]);
+
+  // Calculate route and set map bounds
+  useEffect(() => {
+    const calculateRouteAndBounds = async () => {
+      if (deliveries.length > 0 && currentLocation.lat !== 0) {
+        const activeDelivery = deliveries[deliveries.length - 1];
+        if (activeDelivery.status !== 'delivered') {
+          // Get route details
+          const route = await getRoute(
+            currentLocation.lat,
+            currentLocation.lng,
+            activeDelivery.dropCords.lat,
+            activeDelivery.dropCords.lng
+          );
+          setRouteDetails(route);
+
+          // Calculate bounds
+          const coordinates = [
+            { lat: currentLocation.lat, lng: currentLocation.lng },
+            { lat: activeDelivery.pickupCords.lat, lng: activeDelivery.pickupCords.lng },
+            { lat: activeDelivery.dropCords.lat, lng: activeDelivery.dropCords.lng }
+          ];
+          setMapBounds(getBoundsForCoordinates(coordinates));
+        }
+      }
+    };
+
+    calculateRouteAndBounds();
+  }, [deliveries, currentLocation]);
 
   // Track driver's current location
   useEffect(() => {
@@ -84,7 +141,7 @@ const DriverDashboard = ({ user }) => {
 
   return (
     <div>
-      <Navbar user={user} />
+      <Navbar user={user} driverStatus={driverStatus} onToggleDriverStatus={toggleDriverStatus} />
       <div className="max-w-6xl mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Welcome, {user?.name} <span className="text-gray-500 text-base">(Driver)</span></h2>
 
@@ -116,16 +173,16 @@ const DriverDashboard = ({ user }) => {
               const d = deliveries[deliveries.length - 1];
               return (
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <p><span className="text-gray-500">Order ID:</span> #{d._id}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2">
                     <p><span className="text-gray-500">Pickup:</span> {d.pickupLocation}</p>
                     <p><span className="text-gray-500">Drop:</span> {d.dropLocation}</p>
                     <p><span className="text-gray-500">Customer:</span> {d.customerName}</p>
+                    <p><span className="text-gray-500">Phone:</span> {d.customerMobile}</p>
                     <p><span className="text-gray-500">Pickup Time:</span> {new Date(d.pickupTime).toLocaleString()}</p>
                     <p><span className="text-gray-500">Drop Time:</span> {new Date(d.dropTime).toLocaleString()}</p>
                     <p><span className="text-gray-500">Status:</span> {d.status}</p>
                   </div>
-                  <div>
+                  <div className="flex justify-end space-x-2 mt-4">
                     {d.status === "pending" && (
                       <button onClick={() => updateStatus(d._id, "on route")} className="bg-brand hover:bg-brand-dark text-white rounded-lg px-4 py-2 mr-2">Start Delivery</button>
                     )}
@@ -133,31 +190,74 @@ const DriverDashboard = ({ user }) => {
                       <button onClick={() => updateStatus(d._id, "delivered")} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2">Mark Delivered</button>
                     )}
                   </div>
-                  {currentLocation.lat !== 0 && (
+                  <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 mt-2">
                     <MapContainer
-                      center={[currentLocation.lat, currentLocation.lng]}
+                      bounds={mapBounds}
+                      className="h-full w-full"
                       zoom={13}
-                      className="leaflet-container rounded-lg overflow-hidden border border-gray-200 mt-2"
                     >
                       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                      <Marker position={[currentLocation.lat, currentLocation.lng]} icon={driverIcon}>
-                        <Popup>Your location</Popup>
+
+                      {/* Driver's current location */}
+                      {currentLocation.lat !== 0 && (
+                        <Marker
+                          position={[currentLocation.lat, currentLocation.lng]}
+                          icon={driverIcon}
+                        >
+                          <Popup>
+                            <div className="text-center">
+                              <h3 className="font-medium">Your Location</h3>
+                              <p className="text-sm text-gray-600">
+                                Last updated: {new Date().toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      )}
+
+                      {/* Route display */}
+                      {routeDetails?.route && (
+                        <Polyline
+                          positions={routeDetails.route.map(([lng, lat]) => [lat, lng])}
+                          color={getStatusColor(d.status)}
+                          weight={4}
+                          opacity={0.7}
+                        />
+                      )}
+
+                      {/* Pickup location */}
+                      <Marker
+                        position={[d.pickupCords.lat, d.pickupCords.lng]}
+                        icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
+                      >
+                        <Popup>
+                          <div>
+                            <h3 className="font-medium">Pickup Location</h3>
+                            <p className="text-sm">{d.pickupLocation}</p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {new Date(d.pickupTime).toLocaleString()}
+                            </p>
+                          </div>
+                        </Popup>
                       </Marker>
-                      <Polyline
-                        positions={[
-                          [d.pickupCords.lat, d.pickupCords.lng],
-                          [d.dropCords.lat, d.dropCords.lng]
-                        ]}
-                        color="blue"
-                      />
-                      <Marker position={[d.pickupCords.lat, d.pickupCords.lng]}>
-                        <Popup>Pickup: {d.pickupLocation}</Popup>
-                      </Marker>
-                      <Marker position={[d.dropCords.lat, d.dropCords.lng]}>
-                        <Popup>Drop: {d.dropLocation}</Popup>
+
+                      {/* Drop location */}
+                      <Marker
+                        position={[d.dropCords.lat, d.dropCords.lng]}
+                        icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
+                      >
+                        <Popup>
+                          <div>
+                            <h3 className="font-medium">Drop Location</h3>
+                            <p className="text-sm">{d.dropLocation}</p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              Expected arrival: {new Date(d.dropTime).toLocaleString()}
+                            </p>
+                          </div>
+                        </Popup>
                       </Marker>
                     </MapContainer>
-                  )}
+                  </div>
                 </div>
               );
             })()}
@@ -191,7 +291,9 @@ const DriverDashboard = ({ user }) => {
                       <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
                       <td className="px-4 py-2">{d.customerName}</td>
                       <td className="px-4 py-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{d.status}</span>
+                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
                       </td>
                     </tr>
                   ))}

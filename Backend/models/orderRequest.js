@@ -21,8 +21,18 @@ const orderRequestSchema = new mongoose.Schema(
     },
     vehicleType: {
       type: String,
-      enum: ["truck", "van", "bike"],
+      enum: ["tata 407", "ashok leyland ecomet", "mahindra supro maxi truck", "eicher pro 3015", "bharath benz 2523r"],
       required: true,
+    },
+    estimatedDistance: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    estimatedFare: {
+      type: Number,
+      required: true,
+      min: 0
     },
     pickupTime: { type: Date, required: true },
     dropTime: { type: Date },

@@ -1,15 +1,17 @@
 const express = require("express");
-const router = express.Router();
+
 const { addVehicle, getVehicles, getDriverVehicles } = require("../controllers/vehicleControllers");
-const { authMiddleware, authorizeRoles } = require("../middleware/authMiddleware");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+
+const router = express.Router();
 
 // Admin: add vehicle
-router.post("/", authMiddleware, authorizeRoles("admin"), addVehicle);
+router.post("/", protect, authorizeRoles("admin"), addVehicle);
 
 // Admin: view all vehicles
-router.get("/", authMiddleware, authorizeRoles("admin"), getVehicles);
+router.get("/", protect, authorizeRoles("admin"), getVehicles);
 
 // Driver: view assigned vehicles
-router.get("/my", authMiddleware, authorizeRoles("driver"), getDriverVehicles);
+router.get("/my", protect, authorizeRoles("driver"), getDriverVehicles);
 
 module.exports = router;

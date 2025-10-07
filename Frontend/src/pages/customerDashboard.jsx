@@ -122,11 +122,11 @@ const CustomerDashboard = ({ user }) => {
               const d = deliveries[deliveries.length - 1];
               return (
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <p><span className="text-gray-500">Order ID:</span> #{d._id}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     <p><span className="text-gray-500">Pickup:</span> {d.pickupLocation}</p>
                     <p><span className="text-gray-500">Drop:</span> {d.dropLocation}</p>
                     <p><span className="text-gray-500">Driver:</span> {d.assignedDriver?.name}</p>
+                    <p><span className="text-gray-500">Mobile:</span> {d.assignedDriver?.mobile}</p>
                     <p><span className="text-gray-500">Pickup Time:</span> {new Date(d.pickupTime).toLocaleString()}</p>
                     <p><span className="text-gray-500">Drop Time:</span> {new Date(d.dropTime).toLocaleString()}</p>
                     <p><span className="text-gray-500">Status:</span> {d.status}</p>
@@ -201,7 +201,9 @@ const CustomerDashboard = ({ user }) => {
                       <td className="px-4 py-2">{d.assignedDriver?.name}</td>
                       <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
                       <td className="px-4 py-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{d.status}</span>
+                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
                       </td>
                     </tr>
                   ))}

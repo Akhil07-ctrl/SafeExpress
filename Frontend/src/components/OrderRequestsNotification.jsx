@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { io } from "socket.io-client";
+
 import api from "../utils/api";
 
 const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
@@ -34,7 +35,7 @@ const OrderRequestsNotification = () => {
 
   useEffect(() => {
     fetchPendingCount();
-    
+
     // Join order requests room for real-time updates
     socket.emit("joinOrderRequests");
 
@@ -66,7 +67,7 @@ const OrderRequestsNotification = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative mt-1">
       <button
         onClick={handleOpen}
         className="relative text-gray-700 hover:text-brand transition-colors"

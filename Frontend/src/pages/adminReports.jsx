@@ -39,7 +39,7 @@ const AdminReports = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-8">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 border-b border-gray-200 pb-4">
         <button
           onClick={() => navigate('/admin/dashboard')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
@@ -50,34 +50,37 @@ const AdminReports = () => {
           Back to Dashboard
         </button>
       </div>
+      <div>
+        <h2 className="text-2xl font-semibold mb-6">Order Requests Management</h2>
 
-      <section className="bg-white rounded-xl shadow p-5">
-        <h3 className="text-lg font-medium mb-4">Average Delivery Time per Driver (Hours)</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={driverData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="avgHours" fill="#3B82F6" name="Avg Hours" />
-          </BarChart>
-        </ResponsiveContainer>
-      </section>
+        <section className="bg-white rounded-xl shadow p-5">
+          <h3 className="text-lg font-medium mb-4">Average Delivery Time per Driver (Hours)</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={driverData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="avgHours" fill="#3B82F6" name="Avg Hours" />
+            </BarChart>
+          </ResponsiveContainer>
+        </section>
 
-      <section className="bg-white rounded-xl shadow p-5">
-        <h3 className="text-lg font-medium mb-4">Vehicle Utilization (Deliveries Count)</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={vehicleData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="deliveries" fill="#10B981" name="Deliveries" />
-          </BarChart>
-        </ResponsiveContainer>
-      </section>
+        <section className="bg-white rounded-xl shadow p-5">
+          <h3 className="text-lg font-medium mb-4">Vehicle Utilization (Deliveries Count)</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={vehicleData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="deliveries" fill="#10B981" name="Deliveries" />
+            </BarChart>
+          </ResponsiveContainer>
+        </section>
+      </div>
     </div>
   );
 };

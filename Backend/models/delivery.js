@@ -23,6 +23,7 @@ const deliverySchema = new mongoose.Schema(
       required: true,
     },
     customerName: { type: String, required: true },
+    customerMobile: { type: String, required: true },
     status: {
       type: String,
       enum: ["pending", "on route", "delivered"],

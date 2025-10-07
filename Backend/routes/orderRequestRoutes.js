@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router();
+
 const {
   createOrderRequest,
   getAllOrderRequests,
@@ -8,24 +8,26 @@ const {
   rejectOrderRequest,
   getPendingCount,
 } = require("../controllers/orderRequestControllers");
-const { authMiddleware, authorizeRoles } = require("../middleware/authMiddleware");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+
+const router = express.Router();
 
 // Customer: create order request
-router.post("/", authMiddleware, authorizeRoles("customer"), createOrderRequest);
+router.post("/", protect, authorizeRoles("customer"), createOrderRequest);
 
 // Customer: get my order requests
-router.get("/my", authMiddleware, authorizeRoles("customer"), getMyOrderRequests);
+router.get("/my", protect, authorizeRoles("customer"), getMyOrderRequests);
 
 // Admin: get all order requests
-router.get("/", authMiddleware, authorizeRoles("admin"), getAllOrderRequests);
+router.get("/", protect, authorizeRoles("admin"), getAllOrderRequests);
 
 // Admin: get pending count
-router.get("/pending/count", authMiddleware, authorizeRoles("admin"), getPendingCount);
+router.get("/pending/count", protect, authorizeRoles("admin"), getPendingCount);
 
 // Admin: approve order request
-router.post("/:id/approve", authMiddleware, authorizeRoles("admin"), approveOrderRequest);
+router.post("/:id/approve", protect, authorizeRoles("admin"), approveOrderRequest);
 
 // Admin: reject order request
-router.post("/:id/reject", authMiddleware, authorizeRoles("admin"), rejectOrderRequest);
+router.post("/:id/reject", protect, authorizeRoles("admin"), rejectOrderRequest);
 
 module.exports = router;

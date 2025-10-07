@@ -1,10 +1,10 @@
 const OrderRequest = require("../models/orderRequest");
 const Delivery = require("../models/delivery");
 const Vehicle = require("../models/vehicle");
-const User = require("../models/user");
 
 // Get io instance
 let io;
+
 const getIO = () => {
   if (!io) {
     const server = require("../index");
@@ -21,8 +21,14 @@ const createOrderRequest = async (req, res) => {
       customerMobile,
       pickupLocation,
       dropLocation,
+      pickupLat,
+      pickupLng,
+      dropLat,
+      dropLng,
       vehicleType,
       pickupTime,
+      estimatedDistance,
+      estimatedFare
     } = req.body;
 
     // Validate customer
@@ -36,8 +42,18 @@ const createOrderRequest = async (req, res) => {
       customerMobile,
       pickupLocation,
       dropLocation,
+      pickupCords: {
+        lat: parseFloat(pickupLat),
+        lng: parseFloat(pickupLng)
+      },
+      dropCords: {
+        lat: parseFloat(dropLat),
+        lng: parseFloat(dropLng)
+      },
       vehicleType,
       pickupTime: new Date(pickupTime),
+      estimatedDistance,
+      estimatedFare,
     });
 
     // Emit Socket.IO event for real-time notification
@@ -59,12 +75,12 @@ const getAllOrderRequests = async (req, res) => {
   try {
     const { status } = req.query;
     const filter = status ? { status } : {};
-    
+
     const orderRequests = await OrderRequest.find(filter)
       .populate("customerId", "name email")
       .populate("deliveryId")
       .sort({ createdAt: -1 });
-    
+
     res.json(orderRequests);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -77,7 +93,7 @@ const getMyOrderRequests = async (req, res) => {
     const orderRequests = await OrderRequest.find({ customerId: req.user._id })
       .populate("deliveryId")
       .sort({ createdAt: -1 });
-    
+
     res.json(orderRequests);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -107,7 +123,7 @@ const approveOrderRequest = async (req, res) => {
     // Check scheduling conflicts
     const start = new Date(orderRequest.pickupTime);
     const end = new Date(dropTime);
-    
+
     const driverConflict = await Delivery.findOne({
       assignedDriver,
       $and: [
@@ -141,6 +157,7 @@ const approveOrderRequest = async (req, res) => {
       assignedDriver,
       assignedVehicle,
       customerName: orderRequest.customerName,
+      customerMobile: orderRequest.customerMobile,
       pickupTime: start,
       dropTime: end,
     });
