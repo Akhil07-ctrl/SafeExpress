@@ -48,13 +48,7 @@ export const validateVehicleForm = (values) => {
 export const validateDeliveryForm = (values) => {
   const errors = {};
 
-  if (!validateRequired(values.pickupLocation)) {
-    errors.pickupLocation = 'Pickup location is required';
-  }
 
-  if (!validateRequired(values.dropLocation)) {
-    errors.dropLocation = 'Drop location is required';
-  }
 
   if (!validateRequired(values.customerName)) {
     errors.customerName = 'Customer name is required';

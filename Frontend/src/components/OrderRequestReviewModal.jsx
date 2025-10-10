@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from "react-leaflet";
 import L from "leaflet";
 
 import api from "../utils/api";
+import { getRoute } from "../utils/mapUtils";
 
 const OrderRequestReviewModal = ({
     request,
@@ -26,6 +27,7 @@ const OrderRequestReviewModal = ({
     const [searchPickup, setSearchPickup] = useState("");
     const [searchDrop, setSearchDrop] = useState("");
     const [driverStatuses, setDriverStatuses] = useState({});
+    const [routeCoordinates, setRouteCoordinates] = useState([]);
 
     // Fetch driver statuses
     const fetchDriverStatuses = useCallback(async () => {
@@ -60,6 +62,30 @@ const OrderRequestReviewModal = ({
             return () => clearInterval(intervalId);
         }
     }, [drivers, fetchDriverStatuses]);
+
+    // Calculate route when coordinates change
+    useEffect(() => {
+        const updateRoute = async () => {
+            const { pickupLat, pickupLng, dropLat, dropLng } = assignData;
+            if (pickupLat && pickupLng && dropLat && dropLng) {
+                const routeData = await getRoute(
+                    parseFloat(pickupLat),
+                    parseFloat(pickupLng),
+                    parseFloat(dropLat),
+                    parseFloat(dropLng)
+                );
+
+                if (routeData) {
+                    setRouteCoordinates(routeData.route);
+                } else {
+                    // Fallback to straight line if route calculation fails
+                    setRouteCoordinates([]);
+                }
+            }
+        };
+
+        updateRoute();
+    }, [assignData]);
 
     const handleClose = () => {
         setAssignData({
@@ -267,6 +293,14 @@ const OrderRequestReviewModal = ({
                                 <MapContainer center={[17.385044, 78.486671]} zoom={11} className="leaflet-container">
                                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                                     <ClickSetter />
+                                    {routeCoordinates.length > 0 && (
+                                        <Polyline
+                                            positions={routeCoordinates.map(([lng, lat]) => [lat, lng])}
+                                            color="#0066cc"
+                                            weight={4}
+                                            opacity={0.7}
+                                        />
+                                    )}
                                     {assignData.pickupLat && assignData.pickupLng && (
                                         <Marker icon={pinIcon} position={[Number(assignData.pickupLat), Number(assignData.pickupLng)]}>
                                             <Popup>Pickup</Popup>

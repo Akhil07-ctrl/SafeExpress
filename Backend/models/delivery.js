@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 
 const deliverySchema = new mongoose.Schema(
   {
-    pickupLocation: { type: String, required: true },
-    dropLocation: { type: String, required: true },
     pickupCords: {
       lat: { type: Number, required: true },
       lng: { type: Number, required: true },

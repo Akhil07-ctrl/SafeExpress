@@ -1,31 +1,70 @@
 import { Link } from "react-router-dom";
 
-import { logout } from "../../utils/auth";
 import OrderRequestsNotification from "../OrderRequestsNotification";
 
 const Navbar = ({ user, driverStatus, onToggleDriverStatus }) => {
   const role = (user?.role || '').toLowerCase();
   return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <h3 className="text-lg font-semibold ">SafeExpress</h3>
-        <div className="flex items-center gap-4">
-          {role === "admin" && <Link className="text-gray-700 hover:text-brand" to="/admin/reports">Reports</Link>}
-          {role === "admin" && <OrderRequestsNotification />}
-          {role === "customer" && <Link className="text-gray-700 hover:text-brand" to="/customer/order-requests">My Requests</Link>}
-          {role === "driver" && (
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between h-12 sm:h-14">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">SafeExpress</h3>
+          </div>
+
+          {/* Navigation Links - Always visible */}
+          <div className="flex items-center space-x-2 lg:space-x-4">
+            {role === "admin" && (
+              <Link
+                className="text-sm lg:text-base text-gray-700 hover:text-brand transition-colors duration-200 px-2 py-1 rounded-md hover:bg-gray-100"
+                to="/admin/reports"
+              >
+                Reports
+              </Link>
+            )}
+            {role === "admin" && (
+              <div className="mt-1">
+                <OrderRequestsNotification />
+              </div>
+            )}
+            {role === "customer" && (
+              <Link
+                className="text-sm lg:text-base text-gray-700 hover:text-brand transition-colors duration-200 px-2 py-1 rounded-md hover:bg-gray-100"
+                to="/customer/order-requests"
+              >
+                My Requests
+              </Link>
+            )}
+          </div>
+
+          {/* Right side controls */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Driver toggle - Always visible for drivers */}
+            {role === "driver" && (
+              <button
+                onClick={onToggleDriverStatus}
+                className={`relative inline-flex h-6 w-12 sm:h-8 sm:w-16 items-center rounded-full transition-colors duration-200 flex-shrink-0 ${driverStatus === 'available' ? 'bg-green-500' : 'bg-gray-300'}`}
+                title={driverStatus === 'available' ? 'Online' : 'Offline'}
+              >
+                <span
+                  className={`inline-block h-4 w-4 sm:h-6 sm:w-6 transform rounded-full bg-white shadow transition-transform duration-200 ${driverStatus === 'available' ? 'translate-x-6 sm:translate-x-8' : 'translate-x-1 sm:translate-x-2'}`}
+                />
+                <span className="sr-only">Toggle availability</span>
+              </button>
+            )}
+
+            {/* Logout button */}
             <button
-              onClick={onToggleDriverStatus}
-              className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors duration-200 ${driverStatus === 'available' ? 'bg-green-500' : 'bg-gray-300'}`}
-              title={driverStatus === 'available' ? 'Online' : 'Offline'}
+              onClick={() => {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+              }}
+              className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200"
             >
-              <span
-                className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform duration-200 ${driverStatus === 'available' ? 'translate-x-8' : 'translate-x-2'}`}
-              />
-              <span className="sr-only">Toggle availability</span>
+              Logout
             </button>
-          )}
-          <button onClick={logout} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-3 py-1.5">Logout</button>
+          </div>
         </div>
       </div>
     </nav>

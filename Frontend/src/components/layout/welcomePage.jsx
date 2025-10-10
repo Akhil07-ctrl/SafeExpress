@@ -1,6 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+// Add custom CSS for infinite scroll animation
+const styles = `
+    @keyframes scroll {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    .animate-scroll {
+        animation: scroll 15s linear infinite;
+    }
+
+    .animate-scroll:hover {
+        animation-play-state: paused;
+    }
+`;
+
+// Inject styles into head
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+}
+
 const WelcomePage = () => {
     const [vehicles, setVehicles] = useState(0);
     const [deliveries, setDeliveries] = useState(0);
@@ -199,6 +227,213 @@ const WelcomePage = () => {
                             <div>
                                 <div className="text-4xl md:text-5xl font-bold text-indigo-400 mb-2">{support}</div>
                                 <div className="text-gray-300">Support Available</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Trusted Brands Section */}
+                <section className="py-20 bg-white overflow-hidden">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                                Trusted by Industry Leaders
+                            </h2>
+                            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Join the growing list of companies that rely on SafeExpress for their logistics needs.
+                            </p>
+                        </div>
+
+                        {/* Infinite scrolling brands */}
+                        <div className="relative w-full">
+                            <div className="flex animate-scroll w-max">
+                                {/* First set of brands */}
+                                <div className="flex items-center space-x-8 flex-shrink-0 px-4">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">A</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">Amazon</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">F</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">Flipkart</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">D</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">DHL</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">F</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">FedEx</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">U</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">UPS</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">B</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">BlueDart</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Duplicate set for seamless loop */}
+                                <div className="flex items-center space-x-8 flex-shrink-0 px-4">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">A</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">Amazon</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">F</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">Flipkart</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">D</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">DHL</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">F</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">FedEx</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">U</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">UPS</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <span className="text-white font-bold text-xl">B</span>
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-700">BlueDart</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Customer Reviews Section */}
+                <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                                What Our Customers Say
+                            </h2>
+                            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Real experiences from businesses that have transformed their logistics with SafeExpress.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {/* Review 1 */}
+                            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                <div className="flex items-center mb-4">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+                                        <span className="text-white font-bold">SJ</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">Sarah Johnson</h4>
+                                        <p className="text-sm text-gray-600">Operations Manager, TechCorp</p>
+                                    </div>
+                                </div>
+                                <div className="flex mb-4">
+                                    {[...Array(5)].map((_, i) => (
+                                        <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                        </svg>
+                                    ))}
+                                </div>
+                                <p className="text-gray-700 italic">
+                                    "SafeExpress has revolutionized our delivery operations. Real-time tracking and route optimization have reduced our costs by 30% while improving customer satisfaction."
+                                </p>
+                            </div>
+
+                            {/* Review 2 */}
+                            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                <div className="flex items-center mb-4">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mr-4">
+                                        <span className="text-white font-bold">MR</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">Michael Rodriguez</h4>
+                                        <p className="text-sm text-gray-600">Logistics Director, RetailPlus</p>
+                                    </div>
+                                </div>
+                                <div className="flex mb-4">
+                                    {[...Array(5)].map((_, i) => (
+                                        <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                        </svg>
+                                    ))}
+                                </div>
+                                <p className="text-gray-700 italic">
+                                    "The analytics dashboard provides incredible insights. We've optimized our fleet utilization and reduced fuel costs significantly. Excellent support team too!"
+                                </p>
+                            </div>
+
+                            {/* Review 3 */}
+                            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                <div className="flex items-center mb-4">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mr-4">
+                                        <span className="text-white font-bold">EC</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">Emily Chen</h4>
+                                        <p className="text-sm text-gray-600">CEO, FastDelivery Co.</p>
+                                    </div>
+                                </div>
+                                <div className="flex mb-4">
+                                    {[...Array(5)].map((_, i) => (
+                                        <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                        </svg>
+                                    ))}
+                                </div>
+                                <p className="text-gray-700 italic">
+                                    "Since implementing SafeExpress, our on-time delivery rate has improved from 85% to 98%. The real-time tracking keeps our customers informed and happy."
+                                </p>
                             </div>
                         </div>
                     </div>

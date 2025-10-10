@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { register, login, getCurrentUser, logout, updateProfile, updatePassword, forgotPassword } = require('../controllers/authControllers');
+const { register, login, getCurrentUser, logout, forgotPassword, resetPassword, directResetPassword } = require('../controllers/authControllers');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 const User = require('../models/user');
 
@@ -23,9 +23,8 @@ router.get('/drivers', protect, authorizeRoles('admin'), async (req, res) => {
 // Get current user
 router.get('/me', protect, getCurrentUser);
 router.get('/logout', protect, logout);
-router.put('/updateprofile', protect, updateProfile);
-router.put('/updatepassword', protect, updatePassword);
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword/:token', resetPassword);
+router.post('/directresetpassword', directResetPassword);
 
 module.exports = router;

@@ -86,31 +86,39 @@ const CustomerDashboard = ({ user }) => {
   }, [deliveries, myLocation]);
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Navbar user={user} />
-      <div className="max-w-6xl mx-auto p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Welcome, {user?.name} <span className="text-gray-500 text-base">(Customer)</span></h2>
-          <OrderRequestForm user={user} onSuccess={fetchDeliveries} />
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">
+              Welcome, {user?.name}
+              <span className="text-gray-500 text-sm sm:text-base ml-2">(Customer)</span>
+            </h2>
+            <div className="flex-shrink-0">
+              <OrderRequestForm user={user} onSuccess={fetchDeliveries} />
+            </div>
+          </div>
         </div>
 
         {/* Overview cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">Total Orders</p>
-            <p className="text-2xl font-semibold">{totalDeliveries}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">Total Orders</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mt-1">{totalDeliveries}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">Pending</p>
-            <p className="text-2xl font-semibold text-yellow-600">{pendingCount}</p>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">Pending</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-600 mt-1">{pendingCount}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">On Route</p>
-            <p className="text-2xl font-semibold text-blue-600">{onRouteCount}</p>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">On Route</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 mt-1">{onRouteCount}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">Delivered</p>
-            <p className="text-2xl font-semibold text-green-600">{deliveredCount}</p>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">Delivered</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 mt-1">{deliveredCount}</p>
           </div>
         </div>
 
@@ -123,8 +131,8 @@ const CustomerDashboard = ({ user }) => {
               return (
                 <div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    <p><span className="text-gray-500">Pickup:</span> {d.pickupLocation}</p>
-                    <p><span className="text-gray-500">Drop:</span> {d.dropLocation}</p>
+                    <p><span className="text-gray-500">Pickup:</span> {d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</p>
+                    <p><span className="text-gray-500">Drop:</span> {d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</p>
                     <p><span className="text-gray-500">Driver:</span> {d.assignedDriver?.name}</p>
                     <p><span className="text-gray-500">Mobile:</span> {d.assignedDriver?.mobile}</p>
                     <p><span className="text-gray-500">Pickup Time:</span> {new Date(d.pickupTime).toLocaleString()}</p>
@@ -161,10 +169,10 @@ const CustomerDashboard = ({ user }) => {
                         color="blue"
                       />
                       <Marker position={[d.pickupCords.lat, d.pickupCords.lng]}>
-                        <Popup>Pickup: {d.pickupLocation}</Popup>
+                        <Popup>Pickup: {d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</Popup>
                       </Marker>
                       <Marker position={[d.dropCords.lat, d.dropCords.lng]}>
-                        <Popup>Drop: {d.dropLocation}</Popup>
+                        <Popup>Drop: {d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</Popup>
                       </Marker>
                     </MapContainer>
                   </div>
@@ -185,6 +193,7 @@ const CustomerDashboard = ({ user }) => {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drop</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
@@ -195,10 +204,11 @@ const CustomerDashboard = ({ user }) => {
                   .reverse()
                   .map((d) => (
                     <tr key={d._id}>
-                      <td className="px-4 py-2">#{d._id}</td>
-                      <td className="px-4 py-2">{d.pickupLocation}</td>
-                      <td className="px-4 py-2">{d.dropLocation}</td>
+                      <td className="px-4 py-2">#{d._id.slice(-6)}</td>
+                      <td className="px-4 py-2">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</td>
+                      <td className="px-4 py-2">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</td>
                       <td className="px-4 py-2">{d.assignedDriver?.name}</td>
+                      <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
                       <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
                       <td className="px-4 py-2">
                         {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}

@@ -6,8 +6,6 @@ const User = require("../models/user");
 const createDelivery = async (req, res) => {
   try {
     const {
-      pickupLocation,
-      dropLocation,
       pickupCords,
       dropCords,
       assignedDriver,
@@ -48,8 +46,6 @@ const createDelivery = async (req, res) => {
     }
 
     const delivery = await Delivery.create({
-      pickupLocation,
-      dropLocation,
       pickupCords,
       dropCords,
       assignedDriver,
@@ -180,4 +176,3 @@ const vehicleUtilization = async (req, res) => {
 };
 
 module.exports = { createDelivery, getAllDeliveries, updateDeliveryStatus, avgDeliveryTimePerDriver, vehicleUtilization, getMyDeliveries, getDeliveryTrack };
-

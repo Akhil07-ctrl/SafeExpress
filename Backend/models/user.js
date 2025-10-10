@@ -35,7 +35,9 @@ const userSchema = new mongoose.Schema(
                 },
                 message: props => `${props.value} is not a valid 10-digit mobile number!`
             }
-        }
+        },
+        resetPasswordToken: String,
+        resetPasswordExpire: Date
     }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

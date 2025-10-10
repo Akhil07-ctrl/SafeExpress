@@ -109,12 +109,31 @@ const OrderRequestForm = ({ user, onSuccess }) => {
     setLoading(true);
 
     try {
+      // Validate required fields
+      if (!formData.pickupLat || !formData.pickupLng || !formData.dropLat || !formData.dropLng) {
+        toast.error("Please select both pickup and drop locations on the map");
+        setLoading(false);
+        return;
+      }
+
+      if (!distance || !estimatedFare) {
+        toast.error("Unable to calculate distance and fare. Please try again.");
+        setLoading(false);
+        return;
+      }
+
       const requestData = {
         customerName: formData.customerName,
         customerMobile: formData.customerMobile,
         pickupLocation: formData.pickupLocation,
         dropLocation: formData.dropLocation,
+        pickupLat: parseFloat(formData.pickupLat),
+        pickupLng: parseFloat(formData.pickupLng),
+        dropLat: parseFloat(formData.dropLat),
+        dropLng: parseFloat(formData.dropLng),
         vehicleType: formData.vehicleType,
+        estimatedDistance: distance,
+        estimatedFare: estimatedFare,
         pickupTime: formData.pickupTime,
       };
 
@@ -126,9 +145,16 @@ const OrderRequestForm = ({ user, onSuccess }) => {
         customerMobile: "",
         pickupLocation: "",
         dropLocation: "",
-        vehicleType: "truck",
+        vehicleType: "tata 407",
         pickupTime: "",
+        pickupLat: "",
+        pickupLng: "",
+        dropLat: "",
+        dropLng: "",
       });
+      setDistance(0);
+      setEstimatedFare(0);
+      setRouteCoordinates([]);
       if (onSuccess) onSuccess();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to submit order request");
@@ -149,21 +175,21 @@ const OrderRequestForm = ({ user, onSuccess }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsOpen(false)} />
-          <div className="flex items-center justify-center min-h-screen p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative z-10">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-xl font-semibold">New Order Request</h3>
+          <div className="flex items-center justify-center min-h-screen p-2 sm:p-4">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto relative z-10">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900">New Order Request</h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl p-1"
                 >
                   &times;
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Contact Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Name *
@@ -174,7 +200,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       value={formData.customerName}
                       onChange={handleChange}
                       required
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -188,20 +214,20 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       value={formData.customerMobile}
                       onChange={handleChange}
                       required
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 {/* Map and Location Selection */}
-                <div className="space-y-4">
-                  <div className="flex gap-4 mb-4">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-4">
                     <button
                       type="button"
                       onClick={() => setActivePoint("pickup")}
-                      className={`px-4 py-2 rounded-lg ${activePoint === "pickup"
-                          ? "bg-brand text-white"
-                          : "bg-gray-100 text-gray-700"
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 ${activePoint === "pickup"
+                        ? "bg-brand text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
                       Set Pickup
@@ -209,9 +235,9 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                     <button
                       type="button"
                       onClick={() => setActivePoint("drop")}
-                      className={`px-4 py-2 rounded-lg ${activePoint === "drop"
-                          ? "bg-brand text-white"
-                          : "bg-gray-100 text-gray-700"
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 ${activePoint === "drop"
+                        ? "bg-brand text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
                       Set Drop
@@ -219,35 +245,35 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                   </div>
 
                   {/* Search bars */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         placeholder="Search pickup location"
                         value={searchPickup}
                         onChange={(e) => setSearchPickup(e.target.value)}
-                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                       />
                       <button
                         type="button"
                         onClick={() => geocode(searchPickup, "pickup")}
-                        className="px-4 py-2 bg-gray-800 text-white rounded-lg"
+                        className="px-3 sm:px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg text-sm sm:text-base font-medium transition-colors duration-200"
                       >
                         Find
                       </button>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         placeholder="Search drop location"
                         value={searchDrop}
                         onChange={(e) => setSearchDrop(e.target.value)}
-                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                       />
                       <button
                         type="button"
                         onClick={() => geocode(searchDrop, "drop")}
-                        className="px-4 py-2 bg-gray-800 text-white rounded-lg"
+                        className="px-3 sm:px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg text-sm sm:text-base font-medium transition-colors duration-200"
                       >
                         Find
                       </button>
@@ -255,7 +281,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                   </div>
 
                   {/* Map */}
-                  <div className="h-[400px] rounded-lg overflow-hidden border border-gray-300">
+                  <div className="h-[250px] sm:h-[350px] lg:h-[400px] rounded-lg overflow-hidden border border-gray-300">
                     <MapContainer
                       center={[17.385044, 78.486671]}
                       zoom={11}
@@ -311,7 +337,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                 </div>
 
                 {/* Other form fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Vehicle Type *
@@ -321,14 +347,14 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       value={formData.vehicleType}
                       onChange={handleChange}
                       required
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                     >
                       <option value="">Select Vehicle Type</option>
-                      <option value="mini">Mini</option>
-                      <option value="sedan">Sedan</option>
-                      <option value="suv">SUV</option>
-                      <option value="tempo">Tempo</option>
-                      <option value="truck">Truck</option>
+                      <option value="tata 407">Tata 407</option>
+                      <option value="ashok leyland ecomet">Ashok Leyland Ecomet</option>
+                      <option value="mahindra supro maxi truck">Mahindra Supro Maxi Truck</option>
+                      <option value="eicher pro 3015">Eicher Pro 3015</option>
+                      <option value="bharath benz 2523r">Bharath Benz 2523R</option>
                     </select>
                   </div>
                   <div>
@@ -341,23 +367,23 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       value={formData.pickupTime}
                       onChange={handleChange}
                       required
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-4 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="px-6 py-2 text-gray-600 hover:text-gray-800"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base font-medium transition-colors duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-2 bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base font-medium"
                   >
                     {loading ? "Submitting..." : "Submit Request"}
                   </button>

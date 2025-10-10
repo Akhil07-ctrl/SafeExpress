@@ -42,23 +42,31 @@ const DriverDashboard = ({ user }) => {
   // Fetch driver's current status
   const fetchDriverStatus = useCallback(async () => {
     try {
-      const res = await api.get(`/drivers/status/${user.id}`);
+      console.log('Fetching driver status for user:', user._id);
+      const res = await api.get(`/drivers/status/${user._id}`);
+      console.log('Driver status response:', res.data);
       setDriverStatus(res.data.driverStatus);
     } catch (err) {
       console.error('Error fetching driver status:', err);
     }
-  }, [user.id]);
+  }, [user._id]);
 
   // Toggle driver's availability status
   const toggleDriverStatus = async () => {
     try {
       const newStatus = driverStatus === 'available' ? 'unavailable' : 'available';
+      console.log('Toggling driver status from', driverStatus, 'to', newStatus);
       const res = await api.put('/drivers/status', { driverStatus: newStatus });
+      console.log('API response:', res.data);
       setDriverStatus(res.data.driverStatus);
-      toast.success(`Status updated to ${res.data.driverStatus}`);
+      if (res.data.driverStatus === 'available') {
+        toast.success('You are now available for deliveries');
+      } else {
+        toast.info('You are now unavailable for deliveries');
+      }
     } catch (err) {
       console.error('Error updating driver status:', err);
-      toast.error('Failed to update status');
+      toast.error(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -140,61 +148,99 @@ const DriverDashboard = ({ user }) => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Navbar user={user} driverStatus={driverStatus} onToggleDriverStatus={toggleDriverStatus} />
-      <div className="max-w-6xl mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Welcome, {user?.name} <span className="text-gray-500 text-base">(Driver)</span></h2>
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">
+            Welcome, {user?.name}
+            <span className="text-gray-500 text-sm sm:text-base ml-2">(Driver)</span>
+          </h2>
+        </div>
 
         {/* Overview cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">Total Deliveries</p>
-            <p className="text-2xl font-semibold">{totalDeliveries}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">Total Deliveries</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mt-1">{totalDeliveries}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">Pending</p>
-            <p className="text-2xl font-semibold text-yellow-600">{pendingCount}</p>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">Pending</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-600 mt-1">{pendingCount}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">On Route</p>
-            <p className="text-2xl font-semibold text-blue-600">{onRouteCount}</p>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">On Route</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 mt-1">{onRouteCount}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <p className="text-gray-500 text-sm">Delivered</p>
-            <p className="text-2xl font-semibold text-green-600">{deliveredCount}</p>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">Delivered</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 mt-1">{deliveredCount}</p>
           </div>
         </div>
 
         {/* Latest Delivery */}
         {deliveries.length > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-xl shadow p-4 mb-6">
-            <h4 className="text-md font-semibold mb-2">Latest Delivery</h4>
+          <div className="bg-green-50 border border-green-200 rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900">Latest Delivery</h4>
             {(() => {
               const d = deliveries[deliveries.length - 1];
               return (
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2">
-                    <p><span className="text-gray-500">Pickup:</span> {d.pickupLocation}</p>
-                    <p><span className="text-gray-500">Drop:</span> {d.dropLocation}</p>
-                    <p><span className="text-gray-500">Customer:</span> {d.customerName}</p>
-                    <p><span className="text-gray-500">Phone:</span> {d.customerMobile}</p>
-                    <p><span className="text-gray-500">Pickup Time:</span> {new Date(d.pickupTime).toLocaleString()}</p>
-                    <p><span className="text-gray-500">Drop Time:</span> {new Date(d.dropTime).toLocaleString()}</p>
-                    <p><span className="text-gray-500">Status:</span> {d.status}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-4">
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Pickup</p>
+                      <p className="text-sm text-gray-900 truncate">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</p>
+                    </div>
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Drop</p>
+                      <p className="text-sm text-gray-900 truncate">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</p>
+                    </div>
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Customer</p>
+                      <p className="text-sm text-gray-900">{d.customerName}</p>
+                    </div>
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Phone</p>
+                      <p className="text-sm text-gray-900">{d.customerMobile}</p>
+                    </div>
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Pickup Time</p>
+                      <p className="text-sm text-gray-900">{new Date(d.pickupTime).toLocaleString()}</p>
+                    </div>
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Drop Time</p>
+                      <p className="text-sm text-gray-900">{new Date(d.dropTime).toLocaleString()}</p>
+                    </div>
+                    <div className="bg-white rounded-md p-3">
+                      <p className="text-xs text-gray-500 font-medium">Status</p>
+                      <p className="text-sm text-gray-900 capitalize">{d.status}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-end space-x-2 mt-4">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
                     {d.status === "pending" && (
-                      <button onClick={() => updateStatus(d._id, "on route")} className="bg-brand hover:bg-brand-dark text-white rounded-lg px-4 py-2 mr-2">Start Delivery</button>
+                      <button
+                        onClick={() => updateStatus(d._id, "on route")}
+                        className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200"
+                      >
+                        Start Delivery
+                      </button>
                     )}
                     {d.status === "on route" && (
-                      <button onClick={() => updateStatus(d._id, "delivered")} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2">Mark Delivered</button>
+                      <button
+                        onClick={() => updateStatus(d._id, "delivered")}
+                        className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200"
+                      >
+                        Mark Delivered
+                      </button>
                     )}
                   </div>
-                  <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 mt-2">
+                  <div className="h-[250px] sm:h-[350px] lg:h-[400px] rounded-lg overflow-hidden border border-gray-200">
                     <MapContainer
                       bounds={mapBounds}
+                      center={mapBounds ? undefined : [17.385044, 78.486671]}
+                      zoom={mapBounds ? undefined : 11}
                       className="h-full w-full"
-                      zoom={13}
                     >
                       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
@@ -233,7 +279,7 @@ const DriverDashboard = ({ user }) => {
                         <Popup>
                           <div>
                             <h3 className="font-medium">Pickup Location</h3>
-                            <p className="text-sm">{d.pickupLocation}</p>
+                            <p className="text-sm">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</p>
                             <p className="text-xs text-gray-600 mt-1">
                               {new Date(d.pickupTime).toLocaleString()}
                             </p>
@@ -249,7 +295,7 @@ const DriverDashboard = ({ user }) => {
                         <Popup>
                           <div>
                             <h3 className="font-medium">Drop Location</h3>
-                            <p className="text-sm">{d.dropLocation}</p>
+                            <p className="text-sm">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</p>
                             <p className="text-xs text-gray-600 mt-1">
                               Expected arrival: {new Date(d.dropTime).toLocaleString()}
                             </p>
@@ -265,18 +311,18 @@ const DriverDashboard = ({ user }) => {
         )}
 
         {/* Rest of Deliveries */}
-        <section className="bg-white rounded-xl shadow p-5">
-          <h3 className="text-lg font-medium mb-4">All Deliveries</h3>
+        <section className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-900">All Deliveries</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drop</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Pickup</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Drop</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Vehicle</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -284,16 +330,16 @@ const DriverDashboard = ({ user }) => {
                   .slice(0, -1)
                   .reverse()
                   .map((d) => (
-                    <tr key={d._id}>
-                      <td className="px-4 py-2">#{d._id}</td>
-                      <td className="px-4 py-2">{d.pickupLocation}</td>
-                      <td className="px-4 py-2">{d.dropLocation}</td>
-                      <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
-                      <td className="px-4 py-2">{d.customerName}</td>
-                      <td className="px-4 py-2">
-                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
-                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
-                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
+                    <tr key={d._id} className="hover:bg-gray-50">
+                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900">#{d._id.slice(-6)}</td>
+                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900 hidden sm:table-cell truncate max-w-[150px]">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</td>
+                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900 hidden lg:table-cell truncate max-w-[150px]">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</td>
+                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900 hidden md:table-cell">{d.assignedVehicle?.numberPlate}</td>
+                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900">{d.customerName}</td>
+                      <td className="px-2 sm:px-4 py-3 text-sm">
+                        {d.status === "pending" ? <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                        {d.status === "on route" ? <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                        {d.status === "delivered" ? <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
                       </td>
                     </tr>
                   ))}
