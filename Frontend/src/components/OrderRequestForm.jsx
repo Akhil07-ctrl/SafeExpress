@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 
+import { FormSkeleton } from "./SkeletonLoader";
 import api from "../utils/api";
 import { calculateDistance, calculateFare, getRoute } from "../utils/mapUtils";
 
@@ -27,36 +28,42 @@ const OrderRequestForm = ({ user, onSuccess }) => {
   const [searchPickup, setSearchPickup] = useState("");
   const [searchDrop, setSearchDrop] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // Memoize updateRouteAndFare function
   const updateRouteAndFare = useCallback(async () => {
     const { pickupLat, pickupLng, dropLat, dropLng, vehicleType } = formData;
     if (pickupLat && pickupLng && dropLat && dropLng) {
-      // Calculate straight-line distance
-      const straightDistance = calculateDistance(
-        parseFloat(pickupLat),
-        parseFloat(pickupLng),
-        parseFloat(dropLat),
-        parseFloat(dropLng)
-      );
+      setIsCalculating(true);
+      try {
+        // Calculate straight-line distance
+        const straightDistance = calculateDistance(
+          parseFloat(pickupLat),
+          parseFloat(pickupLng),
+          parseFloat(dropLat),
+          parseFloat(dropLng)
+        );
 
-      // Get actual route
-      const routeData = await getRoute(
-        parseFloat(pickupLat),
-        parseFloat(pickupLng),
-        parseFloat(dropLat),
-        parseFloat(dropLng)
-      );
+        // Get actual route
+        const routeData = await getRoute(
+          parseFloat(pickupLat),
+          parseFloat(pickupLng),
+          parseFloat(dropLat),
+          parseFloat(dropLng)
+        );
 
-      if (routeData) {
-        setRouteCoordinates(routeData.route);
-        setDistance(routeData.distance);
-        setEstimatedFare(calculateFare(routeData.distance, vehicleType));
-      } else {
-        // Fallback to straight-line distance if route calculation fails
-        setRouteCoordinates([]);
-        setDistance(straightDistance);
-        setEstimatedFare(calculateFare(straightDistance, vehicleType));
+        if (routeData) {
+          setRouteCoordinates(routeData.route);
+          setDistance(routeData.distance);
+          setEstimatedFare(calculateFare(routeData.distance, vehicleType));
+        } else {
+          // Fallback to straight-line distance if route calculation fails
+          setRouteCoordinates([]);
+          setDistance(straightDistance);
+          setEstimatedFare(calculateFare(straightDistance, vehicleType));
+        }
+      } finally {
+        setIsCalculating(false);
       }
     }
   }, [formData]);
@@ -282,44 +289,53 @@ const OrderRequestForm = ({ user, onSuccess }) => {
 
                   {/* Map */}
                   <div className="h-[250px] sm:h-[350px] lg:h-[400px] rounded-lg overflow-hidden border border-gray-300">
-                    <MapContainer
-                      center={[17.385044, 78.486671]}
-                      zoom={11}
-                      style={{ height: "100%", width: "100%" }}
-                    >
-                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    {isCalculating ? (
+                      <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                          <p className="text-sm text-gray-600">Calculating route...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <MapContainer
+                        center={[17.385044, 78.486671]}
+                        zoom={11}
+                        style={{ height: "100%", width: "100%" }}
+                      >
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                      {formData.pickupLat && formData.pickupLng && (
-                        <Marker
-                          position={[
-                            parseFloat(formData.pickupLat),
-                            parseFloat(formData.pickupLng),
-                          ]}
-                        >
-                          <Popup>Pickup Location</Popup>
-                        </Marker>
-                      )}
+                        {formData.pickupLat && formData.pickupLng && (
+                          <Marker
+                            position={[
+                              parseFloat(formData.pickupLat),
+                              parseFloat(formData.pickupLng),
+                            ]}
+                          >
+                            <Popup>Pickup Location</Popup>
+                          </Marker>
+                        )}
 
-                      {formData.dropLat && formData.dropLng && (
-                        <Marker
-                          position={[
-                            parseFloat(formData.dropLat),
-                            parseFloat(formData.dropLng),
-                          ]}
-                        >
-                          <Popup>Drop Location</Popup>
-                        </Marker>
-                      )}
+                        {formData.dropLat && formData.dropLng && (
+                          <Marker
+                            position={[
+                              parseFloat(formData.dropLat),
+                              parseFloat(formData.dropLng),
+                            ]}
+                          >
+                            <Popup>Drop Location</Popup>
+                          </Marker>
+                        )}
 
-                      {routeCoordinates.length > 0 && (
-                        <Polyline
-                          positions={routeCoordinates.map(([lng, lat]) => [lat, lng])}
-                          color="#0066cc"
-                          weight={4}
-                          opacity={0.7}
-                        />
-                      )}
-                    </MapContainer>
+                        {routeCoordinates.length > 0 && (
+                          <Polyline
+                            positions={routeCoordinates.map(([lng, lat]) => [lat, lng])}
+                            color="#0066cc"
+                            weight={4}
+                            opacity={0.7}
+                          />
+                        )}
+                      </MapContainer>
+                    )}
                   </div>
 
                   {distance > 0 && (

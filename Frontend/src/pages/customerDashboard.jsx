@@ -5,6 +5,7 @@ import L from "leaflet";
 
 import Navbar from "../components/layout/navbar";
 import OrderRequestForm from "../components/OrderRequestForm";
+import { CardSkeleton, DeliveryCardSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import api from "../utils/api";
 
 const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
@@ -19,6 +20,8 @@ const CustomerDashboard = ({ user }) => {
   const [deliveries, setDeliveries] = useState([]);
   const [driverLocations, setDriverLocations] = useState({}); // { deliveryId: {lat, lng, status} }
   const [myLocation, setMyLocation] = useState(null); // { lat, lng }
+  const [isLoading, setIsLoading] = useState(true);
+  const [activePlan, setActivePlan] = useState(null);
 
   // Calculate stats
   const totalDeliveries = deliveries.length;
@@ -32,16 +35,30 @@ const CustomerDashboard = ({ user }) => {
 
   // Fetch deliveries for the current customer
   const fetchDeliveries = async () => {
+    setIsLoading(true);
     try {
       const res = await api.get("/deliveries/my");
       setDeliveries(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch active plan
+  const fetchActivePlan = async () => {
+    try {
+      const res = await api.get("/payments/my-plan");
+      setActivePlan(res.data);
+    } catch (err) {
+      console.error("No active plan found", err);
     }
   };
 
   useEffect(() => {
     fetchDeliveries();
+    fetchActivePlan();
   }, []);
 
   // Ask for customer's current location
@@ -85,6 +102,35 @@ const CustomerDashboard = ({ user }) => {
     };
   }, [deliveries, myLocation]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar user={user} />
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+          {/* Header Skeleton */}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-32"></div>
+              </div>
+              <div className="h-12 bg-gray-200 rounded-lg w-40"></div>
+            </div>
+          </div>
+
+          {/* Overview cards skeleton */}
+          <CardSkeleton count={4} />
+
+          {/* Latest Delivery skeleton */}
+          <DeliveryCardSkeleton />
+
+          {/* Table skeleton */}
+          <TableSkeleton rows={6} columns={7} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar user={user} />
@@ -101,6 +147,19 @@ const CustomerDashboard = ({ user }) => {
             </div>
           </div>
         </div>
+
+        {/* Active Plan Section */}
+        {activePlan && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl shadow p-4 mb-6">
+            <h4 className="text-md font-semibold mb-2 text-indigo-900">Active Plan</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+              <p><span className="text-gray-700 font-medium">Plan:</span> {activePlan.planType.charAt(0).toUpperCase() + activePlan.planType.slice(1)}</p>
+              <p><span className="text-gray-700 font-medium">Status:</span> <span className={`px-2 py-1 rounded-full text-xs font-medium ${activePlan.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{activePlan.status}</span></p>
+              <p><span className="text-gray-700 font-medium">Start Date:</span> {new Date(activePlan.startDate).toLocaleDateString()}</p>
+              <p><span className="text-gray-700 font-medium">Next Billing:</span> {new Date(activePlan.endDate).toLocaleDateString()}</p>
+            </div>
+          </div>
+        )}
 
         {/* Overview cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">

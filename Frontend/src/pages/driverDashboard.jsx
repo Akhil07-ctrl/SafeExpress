@@ -5,6 +5,7 @@ import L from "leaflet";
 import { toast } from "react-toastify";
 
 import Navbar from "../components/layout/navbar";
+import { CardSkeleton, DeliveryCardSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import api from "../utils/api";
 import { getRoute, getBoundsForCoordinates, getStatusColor, createCustomIcon } from "../utils/mapUtils";
 
@@ -22,6 +23,7 @@ const DriverDashboard = ({ user }) => {
   const [driverStatus, setDriverStatus] = useState('unavailable');
   const [routeDetails, setRouteDetails] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Calculate stats
   const totalDeliveries = deliveries.length;
@@ -31,11 +33,14 @@ const DriverDashboard = ({ user }) => {
 
   // Fetch deliveries assigned to this driver
   const fetchDeliveries = async () => {
+    setIsLoading(true);
     try {
       const res = await api.get("/deliveries/my");
       setDeliveries(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -146,6 +151,30 @@ const DriverDashboard = ({ user }) => {
       toast.error(err.response?.data?.message || "Error updating delivery status");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar user={user} driverStatus={driverStatus} onToggleDriverStatus={toggleDriverStatus} />
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+          {/* Header Skeleton */}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-32"></div>
+          </div>
+
+          {/* Overview cards skeleton */}
+          <CardSkeleton count={4} />
+
+          {/* Latest Delivery skeleton */}
+          <DeliveryCardSkeleton />
+
+          {/* Table skeleton */}
+          <TableSkeleton rows={6} columns={6} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

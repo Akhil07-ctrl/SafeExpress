@@ -15,6 +15,7 @@ import CustomerOrderRequests from "../pages/customerOrderRequests";
 import About from "../pages/about";
 import Services from "../pages/services";
 import Contact from "../pages/contact";
+import Payment from "../pages/payment";
 import ProtectedRoute from "../components/protectedRoute/protectedRoute";
 import api from "../utils/api";
 
@@ -44,8 +45,6 @@ const AppRoutes = () => {
     </div>
   );
 
-
-
   return (
     <Router>
       <Routes>
@@ -55,6 +54,7 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Services />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/payment" element={<Payment user={user} />} />
         {/* Authentication */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login setUser={setUser} />} />

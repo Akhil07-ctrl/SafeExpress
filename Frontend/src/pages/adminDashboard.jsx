@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import api from "../utils/api";
 import Navbar from "../components/layout/navbar";
 import AdminCreateDeliveryModal from "../components/AdminCreateDeliveryModal";
+import { CardSkeleton, MapSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { getRoute, getBoundsForCoordinates, createCustomIcon, getStatusColor } from "../utils/mapUtils";
 import { validateVehicleForm } from "../utils/validation";
 
@@ -125,8 +126,39 @@ const AdminDashboard = ({ user }) => {
     return (
       <>
         <Navbar user={user} />
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 lg:space-y-8">
+            {/* Header Skeleton */}
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+                </div>
+                <div className="h-12 bg-gray-200 rounded-lg w-40"></div>
+              </div>
+            </div>
+
+            {/* Overview cards skeleton */}
+            <CardSkeleton count={5} />
+
+            {/* Map skeleton */}
+            <MapSkeleton />
+
+            {/* Add Vehicle skeleton */}
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+              <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+
+            {/* Table skeleton */}
+            <TableSkeleton rows={8} columns={9} />
+          </div>
         </div>
       </>
     );
@@ -300,46 +332,46 @@ const AdminDashboard = ({ user }) => {
             </form>
           </section>
 
-        {/* View All Deliveries */}
-        <section className="bg-white rounded-xl shadow p-5">
-          <h3 className="text-lg font-medium mb-4">All Deliveries</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drop</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {[...deliveries].reverse().map((d) => (
-                  <tr key={d._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2">#{d._id.slice(-6)}</td>
-                    <td className="px-4 py-2">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</td>
-                    <td className="px-4 py-2">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</td>
-                    <td className="px-4 py-2">{d.assignedDriver?.name}</td>
-                    <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
-                    <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
-                    <td className="px-4 py-2">{d.customerName}</td>
-                    <td className="px-4 py-2">{d.customerMobile}</td>
-                    <td className="px-4 py-2">
-                      {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
-                      {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
-                      {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
-                    </td>
+          {/* View All Deliveries */}
+          <section className="bg-white rounded-xl shadow p-5">
+            <h3 className="text-lg font-medium mb-4">All Deliveries</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drop</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {[...deliveries].reverse().map((d) => (
+                    <tr key={d._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2">#{d._id.slice(-6)}</td>
+                      <td className="px-4 py-2">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</td>
+                      <td className="px-4 py-2">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</td>
+                      <td className="px-4 py-2">{d.assignedDriver?.name}</td>
+                      <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
+                      <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
+                      <td className="px-4 py-2">{d.customerName}</td>
+                      <td className="px-4 py-2">{d.customerMobile}</td>
+                      <td className="px-4 py-2">
+                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           {/* Admin Create Delivery Modal */}
           <AdminCreateDeliveryModal

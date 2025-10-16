@@ -1,7 +1,18 @@
+import { useNavigate } from 'react-router-dom';
+
 import Header from '../components/layout/header';
 import Footer from '../components/layout/footer';
 
 const Services = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = (planType) => {
+    if (planType === 'starter' || planType === 'professional') {
+      navigate('/payment', { state: { planType } });
+    }
+    // Enterprise plan already has contact sales link
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
@@ -194,7 +205,10 @@ const Services = () => {
                     Email support
                   </li>
                 </ul>
-                <button className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+                <button
+                  onClick={() => handleGetStarted('starter')}
+                  className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                >
                   Get Started
                 </button>
               </div>
@@ -230,7 +244,10 @@ const Services = () => {
                     Priority support
                   </li>
                 </ul>
-                <button className="w-full bg-white text-indigo-600 py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-200 font-semibold">
+                <button
+                  onClick={() => handleGetStarted('professional')}
+                  className="w-full bg-white text-indigo-600 py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-200 font-semibold"
+                >
                   Get Started
                 </button>
               </div>
@@ -263,9 +280,12 @@ const Services = () => {
                     Dedicated support
                   </li>
                 </ul>
-                <button className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+                <a
+                  href="/contact"
+                  className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-200 inline-block text-center"
+                >
                   Contact Sales
-                </button>
+                </a>
               </div>
             </div>
           </div>

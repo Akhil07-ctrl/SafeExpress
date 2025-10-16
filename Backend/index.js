@@ -10,8 +10,9 @@ const vehicleRoutes = require('./routes/vehicleRoutes');
 const deliveryRoutes = require('./routes/deliveryRoutes');
 const orderRequestRoutes = require('./routes/orderRequestRoutes');
 const driverRoutes = require('./routes/driverRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
-dotenv.config({ path: './Backend/.env' });
+dotenv.config();
 connectDB();
 
 const app = express();
@@ -29,7 +30,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/order-requests', orderRequestRoutes);
 app.use('/api/drivers', driverRoutes);
-
+app.use('/api/payments', paymentRoutes);
 
 // Create HTTP server and attach Socket.io
 const server = http.createServer(app);
