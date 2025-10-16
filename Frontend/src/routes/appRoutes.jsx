@@ -12,6 +12,9 @@ import AdminOrderRequests from "../pages/adminOrderRequests";
 import DriverDashboard from "../pages/driverDashboard";
 import CustomerDashboard from "../pages/customerDashboard";
 import CustomerOrderRequests from "../pages/customerOrderRequests";
+import About from "../pages/about";
+import Services from "../pages/services";
+import Contact from "../pages/contact";
 import ProtectedRoute from "../components/protectedRoute/protectedRoute";
 import api from "../utils/api";
 
@@ -48,12 +51,16 @@ const AppRoutes = () => {
       <Routes>
         {/* Default route */}
         <Route path="/" element={<WelcomePage />} />
+        {/* Public pages */}
+        <Route path="/about" element={<About />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/contact" element={<Contact />} />
         {/* Authentication */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        
+
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         {/* Admin */}
         <Route

@@ -10,7 +10,7 @@ const Navbar = ({ user, driverStatus, onToggleDriverStatus }) => {
         <div className="flex items-center justify-between h-12 sm:h-14">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">SafeExpress</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-indigo-600 truncate">SafeExpress</h3>
           </div>
 
           {/* Navigation Links - Always visible */}
@@ -19,12 +19,13 @@ const Navbar = ({ user, driverStatus, onToggleDriverStatus }) => {
               <Link
                 className="text-sm lg:text-base text-gray-700 hover:text-brand transition-colors duration-200 px-2 py-1 rounded-md hover:bg-gray-100"
                 to="/admin/reports"
+                onClick={() => window.location.href = "/admin/reports"}
               >
                 Reports
               </Link>
             )}
             {role === "admin" && (
-              <div className="mt-1">
+              <div className="mt-1 hover:bg-gray-100 rounded-md cursor-pointer px-2 py-1 text-brand transition-colors duration-200">
                 <OrderRequestsNotification />
               </div>
             )}
@@ -32,6 +33,7 @@ const Navbar = ({ user, driverStatus, onToggleDriverStatus }) => {
               <Link
                 className="text-sm lg:text-base text-gray-700 hover:text-brand transition-colors duration-200 px-2 py-1 rounded-md hover:bg-gray-100"
                 to="/customer/order-requests"
+                onClick={() => window.location.href = "/customer/order-requests"}
               >
                 My Requests
               </Link>
@@ -60,7 +62,7 @@ const Navbar = ({ user, driverStatus, onToggleDriverStatus }) => {
                 localStorage.removeItem("token");
                 window.location.href = "/login";
               }}
-              className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200"
+              className="bg-gray-900 hover:bg-gray-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200"
             >
               Logout
             </button>

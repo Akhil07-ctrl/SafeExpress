@@ -11,7 +11,7 @@ const deliveryRoutes = require('./routes/deliveryRoutes');
 const orderRequestRoutes = require('./routes/orderRequestRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 
-dotenv.config({ override: true });
+dotenv.config({ override: true, encoding: 'utf16le' });
 connectDB();
 
 const app = express();

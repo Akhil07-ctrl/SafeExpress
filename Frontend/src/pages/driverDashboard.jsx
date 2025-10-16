@@ -190,11 +190,11 @@ const DriverDashboard = ({ user }) => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-4">
                     <div className="bg-white rounded-md p-3">
                       <p className="text-xs text-gray-500 font-medium">Pickup</p>
-                      <p className="text-sm text-gray-900 truncate">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</p>
+                      <p className="text-sm text-gray-900 truncate">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</p>
                     </div>
                     <div className="bg-white rounded-md p-3">
                       <p className="text-xs text-gray-500 font-medium">Drop</p>
-                      <p className="text-sm text-gray-900 truncate">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</p>
+                      <p className="text-sm text-gray-900 truncate">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</p>
                     </div>
                     <div className="bg-white rounded-md p-3">
                       <p className="text-xs text-gray-500 font-medium">Customer</p>
@@ -279,7 +279,7 @@ const DriverDashboard = ({ user }) => {
                         <Popup>
                           <div>
                             <h3 className="font-medium">Pickup Location</h3>
-                            <p className="text-sm">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</p>
+                            <p className="text-sm">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</p>
                             <p className="text-xs text-gray-600 mt-1">
                               {new Date(d.pickupTime).toLocaleString()}
                             </p>
@@ -295,7 +295,7 @@ const DriverDashboard = ({ user }) => {
                         <Popup>
                           <div>
                             <h3 className="font-medium">Drop Location</h3>
-                            <p className="text-sm">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</p>
+                            <p className="text-sm">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</p>
                             <p className="text-xs text-gray-600 mt-1">
                               Expected arrival: {new Date(d.dropTime).toLocaleString()}
                             </p>
@@ -331,15 +331,16 @@ const DriverDashboard = ({ user }) => {
                   .reverse()
                   .map((d) => (
                     <tr key={d._id} className="hover:bg-gray-50">
-                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900">#{d._id.slice(-6)}</td>
-                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900 hidden sm:table-cell truncate max-w-[150px]">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</td>
-                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900 hidden lg:table-cell truncate max-w-[150px]">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</td>
-                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900 hidden md:table-cell">{d.assignedVehicle?.numberPlate}</td>
-                      <td className="px-2 sm:px-4 py-3 text-sm text-gray-900">{d.customerName}</td>
-                      <td className="px-2 sm:px-4 py-3 text-sm">
-                        {d.status === "pending" ? <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
-                        {d.status === "on route" ? <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
-                        {d.status === "delivered" ? <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
+                      <td className="px-4 py-2">#{d._id.slice(-6)}</td>
+                      <td className="px-4 py-2">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</td>
+                      <td className="px-4 py-2">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</td>
+                      <td className="px-4 py-2">{d.assignedDriver?.name}</td>
+                      <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
+                      <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
+                      <td className="px-4 py-2">
+                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
                       </td>
                     </tr>
                   ))}

@@ -121,7 +121,7 @@ const AdminOrderRequests = () => {
       <div className="flex items-center gap-4 border-b border-gray-200 pb-4">
         <button
           onClick={() => navigate('/admin/dashboard')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+          className="flex items-center gap-2 text-gray-600 hover:text-brand transition-colors duration-200 px-2 py-1 rounded-md hover:bg-gray-100"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

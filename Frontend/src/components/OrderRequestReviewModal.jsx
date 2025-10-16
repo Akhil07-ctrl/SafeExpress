@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from "
 import L from "leaflet";
 
 import api from "../utils/api";
-import { getRoute } from "../utils/mapUtils";
+import { getRoute, calculateDistance, calculateFare } from "../utils/mapUtils";
 
 const OrderRequestReviewModal = ({
     request,
@@ -28,6 +28,8 @@ const OrderRequestReviewModal = ({
     const [searchDrop, setSearchDrop] = useState("");
     const [driverStatuses, setDriverStatuses] = useState({});
     const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [distance, setDistance] = useState(0);
+    const [estimatedFare, setEstimatedFare] = useState(0);
 
     // Fetch driver statuses
     const fetchDriverStatuses = useCallback(async () => {
@@ -63,11 +65,20 @@ const OrderRequestReviewModal = ({
         }
     }, [drivers, fetchDriverStatuses]);
 
-    // Calculate route when coordinates change
+    // Calculate route and fare when coordinates change
     useEffect(() => {
-        const updateRoute = async () => {
+        const updateRouteAndFare = async () => {
             const { pickupLat, pickupLng, dropLat, dropLng } = assignData;
             if (pickupLat && pickupLng && dropLat && dropLng) {
+                // Calculate straight-line distance
+                const straightDistance = calculateDistance(
+                    parseFloat(pickupLat),
+                    parseFloat(pickupLng),
+                    parseFloat(dropLat),
+                    parseFloat(dropLng)
+                );
+
+                // Get actual route
                 const routeData = await getRoute(
                     parseFloat(pickupLat),
                     parseFloat(pickupLng),
@@ -77,15 +88,19 @@ const OrderRequestReviewModal = ({
 
                 if (routeData) {
                     setRouteCoordinates(routeData.route);
+                    setDistance(routeData.distance);
+                    setEstimatedFare(calculateFare(routeData.distance, request.vehicleType));
                 } else {
-                    // Fallback to straight line if route calculation fails
+                    // Fallback to straight-line distance if route calculation fails
                     setRouteCoordinates([]);
+                    setDistance(straightDistance);
+                    setEstimatedFare(calculateFare(straightDistance, request.vehicleType));
                 }
             }
         };
 
-        updateRoute();
-    }, [assignData]);
+        updateRouteAndFare();
+    }, [assignData, request.vehicleType]);
 
     const handleClose = () => {
         setAssignData({
@@ -391,6 +406,18 @@ const OrderRequestReviewModal = ({
                                 </div>
                             </div>
                         </div>
+                        {distance > 0 && (
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-gray-600">
+                                    Distance: {distance.toFixed(1)} km
+                                </p>
+                                {estimatedFare > 0 && (
+                                    <p className="text-gray-600">
+                                        Estimated Fare: ₹{estimatedFare}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Drop Time *

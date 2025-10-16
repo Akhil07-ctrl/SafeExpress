@@ -52,7 +52,7 @@ const ForgotPassword = () => {
                 newPassword,
                 confirmPassword
             });
-
+            
             if (response.data.success) {
                 toast.success('Password reset successful!');
                 navigate('/login');
@@ -68,7 +68,7 @@ const ForgotPassword = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-50" style={{ backgroundImage: "url('https://res.cloudinary.com/dmfbb9qqj/image/upload/v1759854731/still-876097f2f1265795b13d6de261cc119f_smpkqk.webp')", backgroundSize: "cover", backgroundPosition: "center" }}>
             <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">Reset Password</h2>
-
+                
                 {!emailVerified ? (
                     <>
                         <p className="text-gray-600 text-center mb-6">
@@ -144,7 +144,7 @@ const ForgotPassword = () => {
                         </form>
                     </>
                 )}
-
+                
                 <div className="mt-4 text-center">
                     <Link to="/login" className="text-brand hover:text-brand-dark">
                         Back to Login

@@ -175,10 +175,6 @@ const logout = (req, res) => {
     });
 };
 
-
-
-
-
 // Forgot password
 const forgotPassword = async (req, res) => {
     try {

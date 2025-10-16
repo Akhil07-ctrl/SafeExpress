@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import Header from './header';
+import Footer from './footer';
+
 // Add custom CSS for infinite scroll animation
 const styles = `
     @keyframes scroll {
@@ -34,8 +37,63 @@ const WelcomePage = () => {
     const [deliveries, setDeliveries] = useState(0);
     const [rate, setRate] = useState(0);
     const [support, setSupport] = useState('0');
+    const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
     const statsRef = useRef(null);
     const navigate = useNavigate();
+
+    const reviews = [
+        {
+            profileImage: "https://res.cloudinary.com/dmfbb9qqj/image/upload/v1759854421/samples/upscale-face-1.jpg",
+            name: "Sarah Johnson",
+            title: "Operations Manager, TechCorp",
+            rating: 5,
+            review: "SafeExpress has revolutionized our delivery operations. Real-time tracking and route optimization have reduced our costs by 30% while improving customer satisfaction."
+        },
+        {
+            profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face",
+            name: "Michael Rodriguez",
+            title: "Logistics Director, RetailPlus",
+            rating: 5,
+            review: "The analytics dashboard provides incredible insights. We've optimized our fleet utilization and reduced fuel costs significantly. Excellent support team too!"
+        },
+        {
+            profileImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
+            name: "Emily Chen",
+            title: "CEO, FastDelivery Co.",
+            rating: 5,
+            review: "Since implementing SafeExpress, our on-time delivery rate has improved from 85% to 98%. The real-time tracking keeps our customers informed and happy."
+        },
+        {
+            profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
+            name: "James Davis",
+            title: "Fleet Manager, Global Logistics",
+            rating: 5,
+            review: "SafeExpress's route optimization has saved us thousands in fuel costs annually. The intuitive interface makes it easy for our drivers to stay on track."
+        },
+        {
+            profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=64&h=64&fit=crop&crop=face",
+            name: "Anna Lee",
+            title: "Supply Chain Director, MegaMart",
+            rating: 5,
+            review: "The comprehensive reporting features have transformed how we analyze our logistics performance. Data-driven decisions have never been easier."
+        },
+        {
+            profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=64&h=64&fit=crop&crop=face",
+            name: "Robert Kim",
+            title: "Operations VP, Express Solutions",
+            rating: 5,
+            review: "Outstanding customer support and seamless integration with our existing systems. SafeExpress has exceeded all our expectations in terms of reliability and efficiency."
+        }
+    ];
+
+    const nextReview = () => {
+        setCurrentReviewIndex((prevIndex) => (prevIndex + 1) % reviews.length);
+    };
+
+    const prevReview = () => {
+        setCurrentReviewIndex((prevIndex) => (prevIndex - 1 + reviews.length) % reviews.length);
+    };
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -58,6 +116,17 @@ const WelcomePage = () => {
         return () => observer.disconnect();
     }, []);
 
+    // Auto-slide carousel
+    useEffect(() => {
+        if (!isHovered) {
+            const interval = setInterval(() => {
+                setCurrentReviewIndex((prevIndex) => (prevIndex + 1) % reviews.length);
+            }, 4000); // Change slide every 4 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [isHovered, reviews.length]);
+
     const animateNumber = (setter, target, duration) => {
         const increment = target / (duration / 50);
         const timer = setInterval(() => {
@@ -73,41 +142,7 @@ const WelcomePage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-            {/* Header */}
-            <header className="bg-white shadow-lg sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <Link to="/" className="text-2xl font-bold text-indigo-600 mr-4">
-                            SafeExpress
-                        </Link>
-
-                        <nav className="hidden md:flex space-x-8">
-                            <Link to="/" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200">
-                                Home
-                            </Link>
-                            <Link to="/about" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200">
-                                About
-                            </Link>
-                            <Link to="/services" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200">
-                                Services
-                            </Link>
-                            <Link to="/contact" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200">
-                                Contact
-                            </Link>
-                        </nav>
-
-                        <div className="flex items-center space-x-4">
-                            <Link to="/login" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200">
-                                Login
-                            </Link>
-
-                            <Link to="/register" className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200">
-                                Sign Up
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
             {/* Main Body */}
             <main className="flex-grow">
@@ -138,9 +173,9 @@ const WelcomePage = () => {
                             <button onClick={() => { navigate('/register') }} className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors duration-200">
                                 Get Started
                             </button>
-                            <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors duration-200">
+                            <Link to="/about" onClick={() => window.location.href = "/about"} className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors duration-200">
                                 Learn More
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </section>
@@ -249,51 +284,87 @@ const WelcomePage = () => {
                             <div className="flex animate-scroll w-max">
                                 {/* First set of brands */}
                                 <div className="flex items-center space-x-8 flex-shrink-0 px-4">
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">A</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760424938/amazon_znirps.webp)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">Amazon</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">F</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760434207/flipkart_azskgk.webp)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">Flipkart</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">D</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760456221/dhl_if8xdo.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">DHL</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">F</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760456498/fedex_w1gyci.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">FedEx</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">U</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760459069/ups_cfhdrc.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">UPS</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">B</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760459267/Blue_Dart_logo_transparent_ym8csx.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">BlueDart</div>
                                         </div>
                                     </div>
@@ -301,55 +372,177 @@ const WelcomePage = () => {
 
                                 {/* Duplicate set for seamless loop */}
                                 <div className="flex items-center space-x-8 flex-shrink-0 px-4">
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">A</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760424938/amazon_znirps.webp)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">Amazon</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">F</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760434207/flipkart_azskgk.webp)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">Flipkart</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">D</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760456221/dhl_if8xdo.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">DHL</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">F</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760456498/fedex_w1gyci.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">FedEx</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">U</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760459069/ups_cfhdrc.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">UPS</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-w-[200px]">
+                                    <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px] cursor-pointer">
                                         <div className="text-center">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <span className="text-white font-bold text-xl">B</span>
-                                            </div>
+                                            <div
+                                                className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:rotate-3"
+                                                style={{
+                                                    backgroundImage: `url(https://res.cloudinary.com/dmfbb9qqj/image/upload/v1760459267/Blue_Dart_logo_transparent_ym8csx.png)`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            ></div>
                                             <div className="text-sm font-semibold text-gray-700">BlueDart</div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* FAQ Section */}
+                <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                                Frequently Asked Questions
+                            </h2>
+                            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Find answers to common questions about SafeExpress and how it can transform your logistics operations.
+                            </p>
+                        </div>
+                        <div className="max-w-4xl mx-auto">
+                            <div className="space-y-4">
+                                {[
+                                    {
+                                        question: "How does SafeExpress track vehicles in real-time?",
+                                        answer: "SafeExpress uses advanced GPS technology integrated with our platform to provide real-time location tracking of all your vehicles. The system updates every 30 seconds and provides live data on vehicle speed, route, fuel consumption, and driver behavior."
+                                    },
+                                    {
+                                        question: "Can I integrate SafeExpress with my existing systems?",
+                                        answer: "Yes, SafeExpress offers comprehensive API integration capabilities. Our platform supports integration with popular ERP systems, CRM software, and other logistics management tools through RESTful APIs and webhooks."
+                                    },
+                                    {
+                                        question: "What kind of support do you provide?",
+                                        answer: "We provide 24/7 technical support through multiple channels including phone, email, and live chat. Our dedicated support team includes logistics experts who can help you optimize your operations and resolve any issues quickly."
+                                    },
+                                    {
+                                        question: "Is my data secure with SafeExpress?",
+                                        answer: "Absolutely. We implement enterprise-grade security measures including end-to-end encryption, regular security audits, and compliance with industry standards like GDPR and SOC 2. Your logistics data is protected with the highest security protocols."
+                                    },
+                                    {
+                                        question: "How quickly can I get started with SafeExpress?",
+                                        answer: "Most customers are up and running within 24-48 hours. Our onboarding team will guide you through the setup process, including device installation, system configuration, and staff training to ensure a smooth transition."
+                                    },
+                                    {
+                                        question: "What are the pricing plans available?",
+                                        answer: "We offer flexible pricing plans starting from our Basic plan for small fleets up to our Enterprise solution for large-scale operations. All plans include core features with additional premium features available in higher tiers. Contact our sales team for a customized quote."
+                                    }
+                                ].map((faq, index) => (
+                                    <div key={index} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                                        <button
+                                            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+                                            onClick={() => {
+                                                const content = document.getElementById(`faq-content-${index}`);
+                                                const icon = document.getElementById(`faq-icon-${index}`);
+                                                if (content.classList.contains('max-h-0')) {
+                                                    content.classList.remove('max-h-0');
+                                                    content.classList.add('max-h-96');
+                                                    icon.classList.add('rotate-180');
+                                                } else {
+                                                    content.classList.remove('max-h-96');
+                                                    content.classList.add('max-h-0');
+                                                    icon.classList.remove('rotate-180');
+                                                }
+                                            }}
+                                        >
+                                            <h3 className="text-lg font-semibold text-gray-900 pr-4">
+                                                {faq.question}
+                                            </h3>
+                                            <svg
+                                                id={`faq-icon-${index}`}
+                                                className="w-6 h-6 text-indigo-600 transform transition-transform duration-200 flex-shrink-0"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        <div
+                                            id={`faq-content-${index}`}
+                                            className="max-h-0 overflow-hidden transition-all duration-300 ease-in-out"
+                                        >
+                                            <div className="px-6 pb-4">
+                                                <p className="text-gray-600 leading-relaxed">
+                                                    {faq.answer}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -366,125 +559,90 @@ const WelcomePage = () => {
                                 Real experiences from businesses that have transformed their logistics with SafeExpress.
                             </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {/* Review 1 */}
-                            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-                                        <span className="text-white font-bold">SJ</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">Sarah Johnson</h4>
-                                        <p className="text-sm text-gray-600">Operations Manager, TechCorp</p>
-                                    </div>
-                                </div>
-                                <div className="flex mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
+                        <div className="relative max-w-4xl mx-auto">
+                            {/* Carousel Container */}
+                            <div
+                                className="overflow-hidden rounded-2xl"
+                                onMouseEnter={() => setIsHovered(true)}
+                                onMouseLeave={() => setIsHovered(false)}
+                            >
+                                <div
+                                    className="flex transition-transform duration-500 ease-in-out"
+                                    style={{ transform: `translateX(-${currentReviewIndex * 100}%)` }}
+                                >
+                                    {reviews.map((review, index) => (
+                                        <div key={index} className="w-full flex-shrink-0 px-4">
+                                            <div className="bg-white p-8 md:p-12 rounded-xl shadow-lg text-center">
+                                                <div className="flex items-center justify-center mb-6">
+                                                    <img
+                                                        src={review.profileImage}
+                                                        alt={`${review.name} profile`}
+                                                        className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-gray-200"
+                                                    />
+                                                    <div className="text-left">
+                                                        <h4 className="text-xl font-semibold text-gray-900">{review.name}</h4>
+                                                        <p className="text-gray-600">{review.title}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-center mb-6">
+                                                    {[...Array(review.rating)].map((_, i) => (
+                                                        <svg key={i} className="w-6 h-6 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                        </svg>
+                                                    ))}
+                                                </div>
+                                                <blockquote className="text-lg text-gray-700 italic leading-relaxed">
+                                                    "{review.review}"
+                                                </blockquote>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                                <p className="text-gray-700 italic">
-                                    "SafeExpress has revolutionized our delivery operations. Real-time tracking and route optimization have reduced our costs by 30% while improving customer satisfaction."
-                                </p>
                             </div>
 
-                            {/* Review 2 */}
-                            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mr-4">
-                                        <span className="text-white font-bold">MR</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">Michael Rodriguez</h4>
-                                        <p className="text-sm text-gray-600">Logistics Director, RetailPlus</p>
-                                    </div>
-                                </div>
-                                <div className="flex mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
-                                    ))}
-                                </div>
-                                <p className="text-gray-700 italic">
-                                    "The analytics dashboard provides incredible insights. We've optimized our fleet utilization and reduced fuel costs significantly. Excellent support team too!"
-                                </p>
-                            </div>
+                            {/* Navigation Buttons */}
+                            <div className="flex justify-center mt-8 space-x-4">
+                                <button
+                                    onClick={prevReview}
+                                    className="bg-white hover:bg-gray-50 text-indigo-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
+                                    aria-label="Previous review"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
 
-                            {/* Review 3 */}
-                            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mr-4">
-                                        <span className="text-white font-bold">EC</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">Emily Chen</h4>
-                                        <p className="text-sm text-gray-600">CEO, FastDelivery Co.</p>
-                                    </div>
-                                </div>
-                                <div className="flex mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
+                                {/* Dots Indicator */}
+                                <div className="flex space-x-2 items-center">
+                                    {reviews.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setCurrentReviewIndex(index)}
+                                            className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentReviewIndex
+                                                ? 'bg-indigo-600'
+                                                : 'bg-gray-300 hover:bg-gray-400'
+                                                }`}
+                                            aria-label={`Go to review ${index + 1}`}
+                                        />
                                     ))}
                                 </div>
-                                <p className="text-gray-700 italic">
-                                    "Since implementing SafeExpress, our on-time delivery rate has improved from 85% to 98%. The real-time tracking keeps our customers informed and happy."
-                                </p>
+
+                                <button
+                                    onClick={nextReview}
+                                    className="bg-white hover:bg-gray-50 text-indigo-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
+                                    aria-label="Next review"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </section>
             </main>
 
-            {/* Footer */}
-            <footer className="bg-gray-800 text-white py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div>
-                            <div className="text-2xl font-bold text-indigo-400 mb-4">
-                                SafeExpress
-                            </div>
-                            <p className="text-gray-300 mb-4">
-                                Revolutionizing logistics management with innovative technology and real-time insights.
-                            </p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">About Us</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">Services</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">Pricing</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">Contact</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Support</h3>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">Help Center</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">Documentation</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">API Reference</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">Status Page</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
-                            <ul className="space-y-2 text-gray-300">
-                                <li>123 Logistics Street</li>
-                                <li>Business City, BC 12345</li>
-                                <li>Phone: +1 (123) 456-7890</li>
-                                <li>Email: info@safeexpress.com</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-                        <p>&copy; {new Date().getFullYear()} SafeExpress LLC. All rights reserved. | Privacy Policy | Terms of Service</p>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };

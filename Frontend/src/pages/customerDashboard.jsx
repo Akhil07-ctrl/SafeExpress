@@ -131,8 +131,8 @@ const CustomerDashboard = ({ user }) => {
               return (
                 <div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    <p><span className="text-gray-500">Pickup:</span> {d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</p>
-                    <p><span className="text-gray-500">Drop:</span> {d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</p>
+                    <p><span className="text-gray-500">Pickup:</span> {d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</p>
+                    <p><span className="text-gray-500">Drop:</span> {d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</p>
                     <p><span className="text-gray-500">Driver:</span> {d.assignedDriver?.name}</p>
                     <p><span className="text-gray-500">Mobile:</span> {d.assignedDriver?.mobile}</p>
                     <p><span className="text-gray-500">Pickup Time:</span> {new Date(d.pickupTime).toLocaleString()}</p>
@@ -169,10 +169,10 @@ const CustomerDashboard = ({ user }) => {
                         color="blue"
                       />
                       <Marker position={[d.pickupCords.lat, d.pickupCords.lng]}>
-                        <Popup>Pickup: {d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</Popup>
+                        <Popup>Pickup: {d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</Popup>
                       </Marker>
                       <Marker position={[d.dropCords.lat, d.dropCords.lng]}>
-                        <Popup>Drop: {d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</Popup>
+                        <Popup>Drop: {d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</Popup>
                       </Marker>
                     </MapContainer>
                   </div>
@@ -205,8 +205,8 @@ const CustomerDashboard = ({ user }) => {
                   .map((d) => (
                     <tr key={d._id}>
                       <td className="px-4 py-2">#{d._id.slice(-6)}</td>
-                      <td className="px-4 py-2">{d.pickupCords.lat.toFixed(4)}, {d.pickupCords.lng.toFixed(4)}</td>
-                      <td className="px-4 py-2">{d.dropCords.lat.toFixed(4)}, {d.dropCords.lng.toFixed(4)}</td>
+                      <td className="px-4 py-2">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</td>
+                      <td className="px-4 py-2">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</td>
                       <td className="px-4 py-2">{d.assignedDriver?.name}</td>
                       <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
                       <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>

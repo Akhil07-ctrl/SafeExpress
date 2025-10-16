@@ -6,6 +6,8 @@ const User = require("../models/user");
 const createDelivery = async (req, res) => {
   try {
     const {
+      pickupLocation,
+      dropLocation,
       pickupCords,
       dropCords,
       assignedDriver,
@@ -46,6 +48,8 @@ const createDelivery = async (req, res) => {
     }
 
     const delivery = await Delivery.create({
+      pickupLocation,
+      dropLocation,
       pickupCords,
       dropCords,
       assignedDriver,
@@ -68,7 +72,7 @@ const createDelivery = async (req, res) => {
 const getAllDeliveries = async (req, res) => {
   try {
     const deliveries = await Delivery.find()
-      .populate("assignedDriver", "name email")
+      .populate("assignedDriver", "name email mobile")
       .populate("assignedVehicle", "numberPlate type");
     res.json(deliveries);
   } catch (error) {
@@ -92,11 +96,18 @@ const updateDeliveryStatus = async (req, res) => {
 
     delivery.status = status;
     await delivery.save();
+
+    // If delivery is completed, update vehicle status to available
+    if (status === "delivered") {
+      await Vehicle.findByIdAndUpdate(delivery.assignedVehicle, { status: "available" });
+    }
+
     res.json(delivery);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 // Get deliveries for current user
 const getMyDeliveries = async (req, res) => {
   try {
@@ -110,7 +121,7 @@ const getMyDeliveries = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden' });
     }
     const deliveries = await Delivery.find(filter)
-      .populate("assignedDriver", "name email")
+      .populate("assignedDriver", "name email mobile")
       .populate("assignedVehicle", "numberPlate type");
     res.json(deliveries);
   } catch (err) {

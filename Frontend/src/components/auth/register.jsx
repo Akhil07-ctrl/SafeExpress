@@ -12,9 +12,11 @@ const Register = () => {
   const [role, setRole] = useState("customer"); // default role
   const [secretCode, setSecretCode] = useState("");
   const [mobile, setMobile] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const payload = { name, email, password, role: (role || '').toLowerCase() };
       if ((role || '').toLowerCase() === 'admin') {
@@ -23,13 +25,14 @@ const Register = () => {
       if (role === 'driver' || role === 'customer') {
         payload.mobile = mobile;
       }
-      await api.post("/auth/register", payload);
+      await api.post('/auth/register', payload);
       toast.success('User registered successfully');
       navigate("/login");
     } catch (err) {
-      const serverMsg = err.response?.data?.message || err.response?.data?.msg;
+      toast.error(err.response?.data?.message || "Registration failed");
       console.error(err);
-      toast.error(serverMsg || "Registration failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -37,7 +40,7 @@ const Register = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4" style={{ backgroundImage: "url('https://res.cloudinary.com/dgsmgz8zl/image/upload/v1759470817/ChatGPT_Image_Oct_3_2025_11_23_07_AM_haekyu.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="w-full max-w-md bg-white shadow-xl rounded-xl p-8">
         {/* Back button */}
-        <Link to="/" className="absolute top-4 left-4 text-gray-700 hover:text-gray-900 flex items-center space-x-1">
+        <Link to="/" onClick={() => window.location.href = "/"} className="absolute top-4 left-4 text-gray-700 hover:text-gray-900 flex items-center space-x-1">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -106,9 +109,11 @@ const Register = () => {
             />
           )}
 
-          <button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white rounded-lg py-2.5 transition">Register</button>
+          <button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white rounded-lg py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled={isSubmitting}>
+            {isSubmitting ? 'Registering...' : 'Register'}
+          </button>
         </form>
-        <p className="mt-4 text-sm text-gray-600">Already have an account? <Link to="/login" className="text-brand hover:underline">Login here</Link>.</p>
+        <p className="mt-4 text-sm text-gray-600 flex justify-center gap-2">Already have an account? <Link to="/login" onClick={() => window.location.href = "/login"} className="text-brand hover:text-brand-dark font-medium">Login here</Link>.</p>
       </div>
     </div>
   );
