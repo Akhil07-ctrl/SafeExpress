@@ -11,7 +11,7 @@ const deliveryRoutes = require('./routes/deliveryRoutes');
 const orderRequestRoutes = require('./routes/orderRequestRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 
-dotenv.config({ override: true, encoding: 'utf16le' });
+dotenv.config({ path: './Backend/.env' });
 connectDB();
 
 const app = express();
@@ -29,6 +29,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/order-requests', orderRequestRoutes);
 app.use('/api/drivers', driverRoutes);
+
 
 // Create HTTP server and attach Socket.io
 const server = http.createServer(app);
