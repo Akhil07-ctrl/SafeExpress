@@ -132,15 +132,15 @@ const Chatbot = () => {
       <div className="fixed bottom-4 right-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 md:p-4 shadow-lg transition-all duration-300 hover:scale-110"
         >
-          <FaRobot size={24} />
+          <FaRobot size={20} className="md:w-6 md:h-6" />
         </button>
       </div>
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-80 h-96 bg-white rounded-lg shadow-2xl z-50 flex flex-col animate-fadeInUp">
+        <div className="fixed bottom-20 right-4 w-72 md:w-80 h-96 bg-white rounded-lg shadow-2xl z-50 flex flex-col animate-fadeInUp">
           {/* Header */}
           <div className="bg-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
             <h3 className="font-semibold">SafeExpress Assistant</h3>

@@ -10,7 +10,9 @@ const Navbar = ({ user, driverStatus, onToggleDriverStatus }) => {
         <div className="flex items-center justify-between h-12 sm:h-14">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h3 className="text-base sm:text-lg font-semibold text-indigo-600 truncate">SafeExpress</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-indigo-600 truncate">
+              <a href="/">SafeExpress</a>
+            </h3>
           </div>
 
           {/* Navigation Links - Always visible */}

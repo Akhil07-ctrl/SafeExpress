@@ -81,26 +81,26 @@ const Header = () => {
                     <div className="flex items-center space-x-4">
                         {user ? (
                             <>
-                                <span className="text-gray-700">Welcome, {user.name}</span>
+                                <span className="hidden md:inline text-gray-700">Welcome, {user.name}</span>
                                 <Link
                                     to={getDashboardPath(user.role)}
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200"
+                                    className="bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm md:text-base"
                                 >
                                     Dashboard
                                 </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200"
+                                    className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 text-sm md:text-base"
                                 >
                                     Logout
                                 </button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" onClick={() => window.location.href = "/login"} className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                                <Link to="/login" onClick={() => window.location.href = "/login"} className="bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm md:text-base">
                                     Login
                                 </Link>
-                                <Link to="/register" onClick={() => window.location.href = "/register"} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                                <Link to="/register" onClick={() => window.location.href = "/register"} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200 text-sm md:text-base">
                                     Sign Up
                                 </Link>
                             </>

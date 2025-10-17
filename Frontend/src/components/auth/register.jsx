@@ -47,7 +47,9 @@ const Register = () => {
           <span>Back to Home</span>
         </Link>
 
-        <h1 className="text-center text-3xl font-bold text-indigo-600 mb-4">SafeExpress</h1>
+        <h1 className="text-center text-3xl font-bold text-indigo-600 mb-4">
+          <a href="/">SafeExpress</a>
+        </h1>
         <p className="text-center text-gray-600 mb-6">Your one-stop solution for safe and efficient logistics.</p>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">Create your account</h2>
 

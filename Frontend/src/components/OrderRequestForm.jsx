@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 
-import { FormSkeleton } from "./SkeletonLoader";
 import api from "../utils/api";
 import { calculateDistance, calculateFare, getRoute } from "../utils/mapUtils";
 
