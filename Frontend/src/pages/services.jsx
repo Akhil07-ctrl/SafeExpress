@@ -11,6 +11,10 @@ const Services = ({ user }) => {
       navigate('/login');
       return;
     }
+    if (user.role === 'admin' || user.role === 'driver') {
+      alert('Admins and drivers are not allowed to purchase starter or professional plans.');
+      return;
+    }
     if (planType === 'starter' || planType === 'professional') {
       navigate('/payment', { state: { planType } });
     }

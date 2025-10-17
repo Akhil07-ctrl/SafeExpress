@@ -7,6 +7,11 @@ const createPaymentIntent = async (req, res) => {
   try {
     const { planType } = req.body;
 
+    // Check if user role is allowed to purchase plans
+    if (req.user.role === 'admin' || req.user.role === 'driver') {
+      return res.status(403).json({ message: 'Admins and drivers are not allowed to purchase starter or professional plans' });
+    }
+
     // Define plan prices
     const planPrices = {
       starter: 9900, // $99 in cents

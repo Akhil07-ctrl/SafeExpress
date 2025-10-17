@@ -42,6 +42,8 @@ const CustomerDashboard = ({ user }) => {
     try {
       const res = await api.get("/deliveries/my");
       setDeliveries(res.data);
+      // Also fetch active plan when deliveries are updated
+      await fetchActivePlan();
     } catch (err) {
       console.error(err);
     } finally {
