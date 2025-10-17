@@ -7,6 +7,7 @@ import Navbar from "../components/layout/navbar";
 import OrderRequestForm from "../components/OrderRequestForm";
 import { CardSkeleton, DeliveryCardSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import api from "../utils/api";
+import { getRoute } from "../utils/mapUtils";
 
 const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
 
@@ -22,6 +23,8 @@ const CustomerDashboard = ({ user }) => {
   const [myLocation, setMyLocation] = useState(null); // { lat, lng }
   const [isLoading, setIsLoading] = useState(true);
   const [activePlan, setActivePlan] = useState(null);
+  const [routeDetails, setRouteDetails] = useState(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // Calculate stats
   const totalDeliveries = deliveries.length;
@@ -75,6 +78,30 @@ const CustomerDashboard = ({ user }) => {
       );
     }
   }, []);
+
+  // Calculate route for latest delivery
+  useEffect(() => {
+    const calculateRoute = async () => {
+      if (latestDelivery && latestDelivery.status !== 'delivered') {
+        setIsCalculating(true);
+        try {
+          const route = await getRoute(
+            latestDelivery.pickupCords.lat,
+            latestDelivery.pickupCords.lng,
+            latestDelivery.dropCords.lat,
+            latestDelivery.dropCords.lng
+          );
+          setRouteDetails(route);
+        } catch (err) {
+          console.error('Error calculating route:', err);
+        } finally {
+          setIsCalculating(false);
+        }
+      }
+    };
+
+    calculateRoute();
+  }, [latestDelivery]);
 
   useEffect(() => {
     // Join Socket.io rooms for each delivery
@@ -153,10 +180,10 @@ const CustomerDashboard = ({ user }) => {
           <div className="bg-indigo-50 border border-indigo-200 rounded-xl shadow p-4 mb-6">
             <h4 className="text-md font-semibold mb-2 text-indigo-900">Active Plan</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-              <p><span className="text-gray-700 font-medium">Plan:</span> {activePlan.planType.charAt(0).toUpperCase() + activePlan.planType.slice(1)}</p>
-              <p><span className="text-gray-700 font-medium">Status:</span> <span className={`px-2 py-1 rounded-full text-xs font-medium ${activePlan.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{activePlan.status}</span></p>
-              <p><span className="text-gray-700 font-medium">Start Date:</span> {new Date(activePlan.startDate).toLocaleDateString()}</p>
-              <p><span className="text-gray-700 font-medium">Next Billing:</span> {new Date(activePlan.endDate).toLocaleDateString()}</p>
+              <p><span className="text-gray-700 font-medium">Plan:</span> {activePlan?.planType ? activePlan.planType.charAt(0).toUpperCase() + activePlan.planType.slice(1) : 'N/A'}</p>
+              <p><span className="text-gray-700 font-medium">Status:</span> <span className={`px-2 py-1 rounded-full text-xs font-medium ${activePlan?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{activePlan?.status || 'N/A'}</span></p>
+              <p><span className="text-gray-700 font-medium">Start Date:</span> {activePlan?.startDate ? new Date(activePlan.startDate).toLocaleDateString() : 'N/A'}</p>
+              <p><span className="text-gray-700 font-medium">Next Billing:</span> {activePlan?.endDate ? new Date(activePlan.endDate).toLocaleDateString() : 'N/A'}</p>
             </div>
           </div>
         )}
@@ -200,40 +227,50 @@ const CustomerDashboard = ({ user }) => {
                   </div>
 
                   <div className="mt-4 relative" style={{ height: '400px', zIndex: 1 }}>
-                    <MapContainer
-                      center={latestDriverLocation ? [latestDriverLocation.lat, latestDriverLocation.lng] : [d.pickupCords.lat, d.pickupCords.lng]}
-                      zoom={13}
-                      style={{ height: '100%', width: '100%', borderRadius: '0.5rem', zIndex: 1 }}
-                      className="border border-gray-200"
-                    >
-                      <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      />
-                      {latestDriverLocation && (
-                        <Marker position={[latestDriverLocation.lat, latestDriverLocation.lng]} icon={driverIcon}>
-                          <Popup>Driver's Location</Popup>
+                    {isCalculating ? (
+                      <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                          <p className="text-sm text-gray-600">Calculating route...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <MapContainer
+                        center={latestDriverLocation ? [latestDriverLocation.lat, latestDriverLocation.lng] : [d.pickupCords.lat, d.pickupCords.lng]}
+                        zoom={13}
+                        style={{ height: '100%', width: '100%', borderRadius: '0.5rem', zIndex: 1 }}
+                        className="border border-gray-200"
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        {latestDriverLocation && (
+                          <Marker position={[latestDriverLocation.lat, latestDriverLocation.lng]} icon={driverIcon}>
+                            <Popup>Driver's Location</Popup>
+                          </Marker>
+                        )}
+                        {myLocation && (
+                          <Marker position={[myLocation.lat, myLocation.lng]}>
+                            <Popup>Your Location</Popup>
+                          </Marker>
+                        )}
+                        {routeDetails?.route && (
+                          <Polyline
+                            positions={routeDetails.route.map(([lng, lat]) => [lat, lng])}
+                            color="#0066cc"
+                            weight={4}
+                            opacity={0.7}
+                          />
+                        )}
+                        <Marker position={[d.pickupCords.lat, d.pickupCords.lng]}>
+                          <Popup>Pickup: {d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</Popup>
                         </Marker>
-                      )}
-                      {myLocation && (
-                        <Marker position={[myLocation.lat, myLocation.lng]}>
-                          <Popup>Your Location</Popup>
+                        <Marker position={[d.dropCords.lat, d.dropCords.lng]}>
+                          <Popup>Drop: {d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</Popup>
                         </Marker>
-                      )}
-                      <Polyline
-                        positions={[
-                          [d.pickupCords.lat, d.pickupCords.lng],
-                          [d.dropCords.lat, d.dropCords.lng]
-                        ]}
-                        color="blue"
-                      />
-                      <Marker position={[d.pickupCords.lat, d.pickupCords.lng]}>
-                        <Popup>Pickup: {d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</Popup>
-                      </Marker>
-                      <Marker position={[d.dropCords.lat, d.dropCords.lng]}>
-                        <Popup>Drop: {d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</Popup>
-                      </Marker>
-                    </MapContainer>
+                      </MapContainer>
+                    )}
                   </div>
                 </div>
               );

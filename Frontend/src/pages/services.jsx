@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/header';
 import Footer from '../components/layout/footer';
 
-const Services = () => {
+const Services = ({ user }) => {
   const navigate = useNavigate();
 
   const handleGetStarted = (planType) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     if (planType === 'starter' || planType === 'professional') {
       navigate('/payment', { state: { planType } });
     }

@@ -52,7 +52,7 @@ const AppRoutes = () => {
         <Route path="/" element={<WelcomePage />} />
         {/* Public pages */}
         <Route path="/about" element={<About />} />
-        <Route path="/services" element={<Services />} />
+        <Route path="/services" element={<Services user={user} />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/payment" element={<Payment user={user} />} />
         {/* Authentication */}

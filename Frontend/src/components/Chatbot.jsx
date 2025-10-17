@@ -14,7 +14,7 @@ const Chatbot = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length]);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
