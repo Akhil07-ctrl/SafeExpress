@@ -25,10 +25,10 @@ const Footer = () => {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Support</h3>
                         <ul className="space-y-2">
-                            <li><Link to="/contact" onClick={() => window.location.href = "/contact"} className="text-gray-300 hover:text-white transition-colors duration-200">Help Center</Link></li>
-                            <li><Link to="/contact" onClick={() => window.location.href = "/contact"} className="text-gray-300 hover:text-white transition-colors duration-200">Documentation</Link></li>
-                            <li><Link to="/contact" onClick={() => window.location.href = "/contact"} className="text-gray-300 hover:text-white transition-colors duration-200">API Reference</Link></li>
-                            <li><Link to="/contact" onClick={() => window.location.href = "/contact"} className="text-gray-300 hover:text-white transition-colors duration-200">Status Page</Link></li>
+                            <li><Link to="/careers" onClick={() => window.location.href = "/careers"} className="text-gray-300 hover:text-white transition-colors duration-200">Careers</Link></li>
+                            <li><Link to="/docs" onClick={() => window.location.href = "/docs"} className="text-gray-300 hover:text-white transition-colors duration-200">Documentation</Link></li>
+                            <li><Link to="/api" onClick={() => window.location.href = "/api"} className="text-gray-300 hover:text-white transition-colors duration-200">API Reference</Link></li>
+                            <li><Link to="/blog" onClick={() => window.location.href = "/blog"} className="text-gray-300 hover:text-white transition-colors duration-200">Blog</Link></li>
                         </ul>
                     </div>
                     <div>

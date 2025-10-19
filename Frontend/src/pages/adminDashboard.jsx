@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { toast } from "react-toastify";
 
@@ -8,6 +9,8 @@ import AdminCreateDeliveryModal from "../components/AdminCreateDeliveryModal";
 import { CardSkeleton, MapSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { getRoute, getBoundsForCoordinates, createCustomIcon, getStatusColor } from "../utils/mapUtils";
 import { validateVehicleForm } from "../utils/validation";
+
+const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
 
 const AdminDashboard = ({ user }) => {
   // Data states
@@ -24,6 +27,7 @@ const AdminDashboard = ({ user }) => {
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [vehicleCapacity, setVehicleCapacity] = useState("");
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   const fetchDeliveryRoute = async (delivery) => {
     if (!delivery) return;
@@ -56,6 +60,11 @@ const AdminDashboard = ({ user }) => {
       setDeliveries(deliveriesRes.data);
       setDrivers(driversRes.data);
 
+      // Calculate total revenue from paid deliveries
+      const paidDeliveries = deliveriesRes.data.filter(d => d.paymentStatus === 'paid');
+      const revenue = paidDeliveries.reduce((sum, d) => sum + d.baseFare, 0);
+      setTotalRevenue(revenue);
+
       // Filter active deliveries
       const activeDelivs = deliveriesRes.data.filter(d => d.status === 'on route');
       setActiveDeliveries(activeDelivs);
@@ -78,6 +87,17 @@ const AdminDashboard = ({ user }) => {
 
   useEffect(() => {
     fetchData();
+
+    // Listen for deliveryPaid event
+    socket.on('deliveryPaid', (data) => {
+      // Refresh analytics to show updated revenue
+      fetchData();
+      toast.success(`Payment received: ₹${data.amount} from ${data.customerName}`);
+    });
+
+    return () => {
+      socket.off('deliveryPaid');
+    };
   }, []);
 
   // Fetch routes for active deliveries
@@ -186,7 +206,7 @@ const AdminDashboard = ({ user }) => {
           </div>
 
           {/* Overview cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
               <p className="text-gray-500 text-xs sm:text-sm font-medium">Vehicles</p>
               <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mt-1">{totalVehicles}</p>
@@ -206,6 +226,10 @@ const AdminDashboard = ({ user }) => {
             <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
               <p className="text-gray-500 text-xs sm:text-sm font-medium">Delivered</p>
               <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 mt-1">{deliveredCount}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 text-center">
+              <p className="text-gray-500 text-xs sm:text-sm font-medium">Total Revenue</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 mt-1">₹{totalRevenue.toFixed(2)}</p>
             </div>
           </div>
 

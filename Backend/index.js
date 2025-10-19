@@ -11,6 +11,7 @@ const deliveryRoutes = require('./routes/deliveryRoutes');
 const orderRequestRoutes = require('./routes/orderRequestRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const careerRoutes = require('./routes/careerRoutes');
 
 dotenv.config();
 connectDB();
@@ -31,6 +32,7 @@ app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/order-requests', orderRequestRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/careers', careerRoutes);
 
 // Create HTTP server and attach Socket.io
 const server = http.createServer(app);

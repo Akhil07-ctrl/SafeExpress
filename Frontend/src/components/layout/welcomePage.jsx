@@ -236,8 +236,15 @@ const WelcomePage = () => {
                 </section>
 
                 {/* Stats Section */}
-                <section ref={statsRef} className="py-20 bg-gray-900 text-white">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <section
+                    ref={statsRef}
+                    className="py-20 bg-cover bg-center text-white relative"
+                    style={{
+                        backgroundImage: `url('https://plus.unsplash.com/premium_photo-1661503393312-24893a32ca6b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170')`
+                    }}
+                >
+                    <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl md:text-4xl font-bold mb-4">
                                 Trusted by Logistics Leaders
@@ -463,13 +470,19 @@ const WelcomePage = () => {
                 </section>
 
                 {/* FAQ Section */}
-                <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <section
+                    className="py-20 bg-cover bg-center text-white relative"
+                    style={{
+                        backgroundImage: `url('https://plus.unsplash.com/premium_photo-1678000616480-d4a041e6eba1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=735')`
+                    }}
+                >
+                    <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold mb-4">
                                 Frequently Asked Questions
                             </h2>
-                            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
                                 Find answers to common questions about SafeExpress and how it can transform your logistics operations.
                             </p>
                         </div>

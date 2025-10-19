@@ -18,6 +18,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
     pickupLng: "",
     dropLat: "",
     dropLng: "",
+    baseFare: "",
   });
 
   const [distance, setDistance] = useState(0);
@@ -71,6 +72,13 @@ const OrderRequestForm = ({ user, onSuccess }) => {
   useEffect(() => {
     updateRouteAndFare();
   }, [formData.pickupLat, formData.pickupLng, formData.dropLat, formData.dropLng, formData.vehicleType, updateRouteAndFare]);
+
+  // Auto-fill base fare when estimated fare is calculated
+  useEffect(() => {
+    if (estimatedFare > 0) {
+      setFormData(prev => ({ ...prev, baseFare: estimatedFare.toFixed(2) }));
+    }
+  }, [estimatedFare]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -140,6 +148,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
         vehicleType: formData.vehicleType,
         estimatedDistance: distance,
         estimatedFare: estimatedFare,
+        baseFare: Number(formData.baseFare),
         pickupTime: formData.pickupTime,
       };
 
@@ -157,6 +166,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
         pickupLng: "",
         dropLat: "",
         dropLng: "",
+        baseFare: "",
       });
       setDistance(0);
       setEstimatedFare(0);
@@ -339,14 +349,16 @@ const OrderRequestForm = ({ user, onSuccess }) => {
 
                   {distance > 0 && (
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-gray-600">
-                        Distance: {distance.toFixed(1)} km
-                      </p>
-                      {estimatedFare > 0 && (
-                        <p className="text-gray-600">
-                          Estimated Fare: ₹{estimatedFare}
-                        </p>
-                      )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Distance</p>
+                          <p className="text-lg font-semibold text-gray-900">{distance.toFixed(2)} km</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Estimated Fare</p>
+                          <p className="text-lg font-semibold text-green-600">₹{estimatedFare.toFixed(2)}</p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

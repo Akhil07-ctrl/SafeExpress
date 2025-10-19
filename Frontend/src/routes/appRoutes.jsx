@@ -15,6 +15,10 @@ import CustomerOrderRequests from "../pages/customerOrderRequests";
 import About from "../pages/about";
 import Services from "../pages/services";
 import Contact from "../pages/contact";
+import Careers from "../pages/careers";
+import Blog from "../pages/blog";
+import Docs from "../pages/docs";
+import API from "../pages/api";
 import Payment from "../pages/payment";
 import ProtectedRoute from "../components/protectedRoute/protectedRoute";
 import api from "../utils/api";
@@ -43,6 +47,7 @@ const AppRoutes = () => {
         <p className="text-gray-600">Loading...</p>
       </div>
     </div>
+
   );
 
   return (
@@ -53,6 +58,10 @@ const AppRoutes = () => {
         {/* Public pages */}
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Services user={user} />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/docs" element={<Docs />} />
+        <Route path="/api" element={<API />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/payment" element={<Payment user={user} />} />
         {/* Authentication */}

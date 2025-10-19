@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 const Plan = require('../models/plan');
+const Delivery = require('../models/delivery');
 
 // Create payment intent
 const createPaymentIntent = async (req, res) => {
@@ -144,9 +145,122 @@ const cancelPlan = async (req, res) => {
   }
 };
 
+// Create payment intent for delivery
+const createDeliveryPaymentIntent = async (req, res) => {
+  try {
+    const { deliveryId } = req.body;
+
+    // Find the delivery
+    const delivery = await Delivery.findById(deliveryId);
+    if (!delivery) {
+      return res.status(404).json({ message: 'Delivery not found' });
+    }
+
+    // Check if delivery is delivered and payment is pending
+    if (delivery.status !== 'delivered' || delivery.paymentStatus !== 'pending') {
+      return res.status(400).json({ message: 'Payment not required for this delivery' });
+    }
+
+    // Check if user is the customer
+    if (delivery.customerName !== req.user.name) {
+      return res.status(403).json({ message: 'Not authorized to pay for this delivery' });
+    }
+
+    const amount = Math.round(delivery.baseFare * 100); // Convert to cents
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      metadata: {
+        deliveryId: delivery._id.toString(),
+        userId: req.user._id.toString(),
+        customerName: delivery.customerName
+      }
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      amount,
+      deliveryId
+    });
+  } catch (error) {
+    console.error('Delivery payment intent creation error:', error);
+    res.status(500).json({ message: 'Failed to create payment intent' });
+  }
+};
+
+// Confirm delivery payment
+const confirmDeliveryPayment = async (req, res) => {
+  try {
+    const { paymentIntentId, deliveryId } = req.body;
+
+    // Retrieve payment intent from Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({ message: 'Payment not successful' });
+    }
+
+    // Update delivery payment status
+    const delivery = await Delivery.findById(deliveryId);
+    if (!delivery) {
+      return res.status(404).json({ message: 'Delivery not found' });
+    }
+
+    delivery.paymentStatus = 'paid';
+    await delivery.save();
+
+    // Emit socket event to admin for revenue update
+    const io = req.app.get('io');
+    io.emit('deliveryPaid', {
+      deliveryId: delivery._id,
+      amount: delivery.baseFare,
+      customerName: delivery.customerName
+    });
+
+    res.json({
+      message: 'Payment confirmed',
+      delivery: {
+        id: delivery._id,
+        paymentStatus: delivery.paymentStatus,
+        baseFare: delivery.baseFare
+      }
+    });
+  } catch (error) {
+    console.error('Delivery payment confirmation error:', error);
+    res.status(500).json({ message: 'Failed to confirm payment' });
+  }
+};
+
+// Get total revenue from paid deliveries
+const getTotalRevenue = async (req, res) => {
+  try {
+    const result = await Delivery.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$baseFare' },
+          totalPaidDeliveries: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const revenue = result.length > 0 ? result[0] : { totalRevenue: 0, totalPaidDeliveries: 0 };
+    res.json(revenue);
+  } catch (error) {
+    console.error('Get total revenue error:', error);
+    res.status(500).json({ message: 'Failed to get total revenue' });
+  }
+};
+
 module.exports = {
   createPaymentIntent,
   confirmPayment,
   getMyPlan,
-  cancelPlan
+  cancelPlan,
+  createDeliveryPaymentIntent,
+  confirmDeliveryPayment,
+  getTotalRevenue,
 };

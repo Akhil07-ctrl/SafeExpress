@@ -5,6 +5,7 @@ import L from "leaflet";
 
 import Navbar from "../components/layout/navbar";
 import OrderRequestForm from "../components/OrderRequestForm";
+import PaymentPopup from "../components/PaymentPopup";
 import { CardSkeleton, DeliveryCardSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import api from "../utils/api";
 import { getRoute } from "../utils/mapUtils";
@@ -25,6 +26,8 @@ const CustomerDashboard = ({ user }) => {
   const [activePlan, setActivePlan] = useState(null);
   const [routeDetails, setRouteDetails] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
 
   // Calculate stats
   const totalDeliveries = deliveries.length;
@@ -64,6 +67,17 @@ const CustomerDashboard = ({ user }) => {
   useEffect(() => {
     fetchDeliveries();
     fetchActivePlan();
+
+    // Listen for deliveryDelivered event
+    socket.on('deliveryDelivered', (data) => {
+      // Show payment popup
+      setShowPaymentPopup(true);
+      setPaymentData(data);
+    });
+
+    return () => {
+      socket.off('deliveryDelivered');
+    };
   }, []);
 
   // Ask for customer's current location
@@ -311,7 +325,16 @@ const CustomerDashboard = ({ user }) => {
                       <td className="px-4 py-2">
                         {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
                         {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
-                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
+                        {d.status === "delivered" ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span>
+                            {d.paymentStatus === "paid" ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Paid</span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Payment Pending</span>
+                            )}
+                          </div>
+                        ) : null}
                       </td>
                     </tr>
                   ))}
@@ -319,6 +342,18 @@ const CustomerDashboard = ({ user }) => {
             </table>
           </div>
         </section>
+
+        {/* Payment Popup */}
+        <PaymentPopup
+          isOpen={showPaymentPopup}
+          onClose={() => setShowPaymentPopup(false)}
+          deliveryData={paymentData}
+          onPaymentSuccess={() => {
+            setShowPaymentPopup(false);
+            setPaymentData(null);
+            fetchDeliveries(); // Refresh deliveries to show updated payment status
+          }}
+        />
       </div>
     </div>
   );

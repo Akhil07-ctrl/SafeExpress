@@ -29,6 +29,12 @@ const deliverySchema = new mongoose.Schema(
       enum: ["pending", "on route", "delivered"],
       default: "pending",
     },
+    baseFare: { type: Number, required: true },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid"],
+      default: "pending",
+    },
     pickupTime: { type: Date, required: true },
     dropTime: { type: Date, required: true },
   },

@@ -92,5 +92,11 @@ export const validateDeliveryForm = (values) => {
     errors.dropCoords = 'Invalid drop coordinates';
   }
 
+  if (!validateRequired(values.baseFare)) {
+    errors.baseFare = 'Base fare is required';
+  } else if (isNaN(values.baseFare) || parseFloat(values.baseFare) < 0) {
+    errors.baseFare = 'Base fare must be a positive number';
+  }
+
   return errors;
 };

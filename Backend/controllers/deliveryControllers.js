@@ -16,6 +16,7 @@ const createDelivery = async (req, res) => {
       customerMobile,
       pickupTime,
       dropTime,
+      baseFare,
     } = req.body;
 
     // Check scheduling conflicts
@@ -58,6 +59,7 @@ const createDelivery = async (req, res) => {
       customerMobile,
       pickupTime: start,
       dropTime: end,
+      baseFare,
     });
 
     // Update vehicle status
@@ -97,9 +99,19 @@ const updateDeliveryStatus = async (req, res) => {
     delivery.status = status;
     await delivery.save();
 
-    // If delivery is completed, update vehicle status to available
+    // If delivery is completed, update vehicle status to available and emit socket event
     if (status === "delivered") {
       await Vehicle.findByIdAndUpdate(delivery.assignedVehicle, { status: "available" });
+
+      // Emit socket event to customer for payment popup
+      const io = req.app.get('io');
+      io.emit('deliveryDelivered', {
+        deliveryId: delivery._id,
+        baseFare: delivery.baseFare,
+        customerName: delivery.customerName,
+        pickupLocation: delivery.pickupLocation,
+        dropLocation: delivery.dropLocation,
+      });
     }
 
     res.json(delivery);

@@ -20,6 +20,7 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
     customerMobile: "",
     pickupTime: "",
     dropTime: "",
+    baseFare: "",
   });
   const [activePoint, setActivePoint] = useState("pickup");
   const [searchPickup, setSearchPickup] = useState("");
@@ -82,6 +83,7 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
       if (selectedVehicle) {
         const fare = calculateFare(distance, selectedVehicle.type);
         setEstimatedFare(fare);
+        setFormData(prev => ({ ...prev, baseFare: fare.toFixed(2) }));
       }
     }
   }, [distance, formData.assignedVehicle, vehicles]);
@@ -134,6 +136,7 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
         customerMobile: formData.customerMobile,
         pickupTime: formData.pickupTime,
         dropTime: formData.dropTime,
+        baseFare: Number(formData.baseFare),
       });
       toast.success("Delivery created successfully!");
       setFormData({
@@ -149,6 +152,7 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
         customerMobile: "",
         pickupTime: "",
         dropTime: "",
+        baseFare: "",
       });
       onSuccess();
       onClose();
@@ -278,6 +282,17 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
                 className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
+            <input
+              placeholder="Base Fare (₹)"
+              name="baseFare"
+              value={formData.baseFare}
+              onChange={handleChange}
+              required
+              type="number"
+              min="0"
+              step="0.01"
+              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+            />
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-2">

@@ -186,7 +186,7 @@ const Services = ({ user }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200 hover:shadow-xl hover:scale-105 hover:border-indigo-300 transition-all duration-300 cursor-pointer">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Starter</h3>
-                <div className="text-4xl font-bold text-indigo-600 mb-6">$99<span className="text-lg font-normal text-gray-600">/month</span></div>
+                <div className="text-4xl font-bold text-indigo-600 mb-6">₹8,167<span className="text-lg font-normal text-gray-600">/month</span></div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <svg className="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
@@ -225,7 +225,7 @@ const Services = ({ user }) => {
                   Most Popular
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Professional</h3>
-                <div className="text-4xl font-bold mb-6">$299<span className="text-lg font-normal opacity-75">/month</span></div>
+                <div className="text-4xl font-bold mb-6">₹24,667<span className="text-lg font-normal opacity-75">/month</span></div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <svg className="w-5 h-5 text-white mr-3" fill="currentColor" viewBox="0 0 20 20">
