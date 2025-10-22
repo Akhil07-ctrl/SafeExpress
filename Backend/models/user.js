@@ -26,6 +26,17 @@ const userSchema = new mongoose.Schema(
             default: 'unavailable',
             required: function () { return this.role === 'driver'; }
         },
+        vehicleTypes: {
+            type: [String],
+            enum: ['Tata 407', 'Ashok Leyland Ecomet', 'Mahindra Supro Maxi Truck', 'Eicher Pro 3015', 'Bharath Benz 2523R'],
+            default: [],
+            validate: {
+                validator: function (v) {
+                    return !this.role || this.role !== 'driver' || v.length > 0;
+                },
+                message: 'Driver must have at least one vehicle type'
+            }
+        },
         mobile: {
             type: String,
             required: function () { return this.role === 'driver' || this.role === 'customer'; },
@@ -37,7 +48,11 @@ const userSchema = new mongoose.Schema(
             }
         },
         resetPasswordToken: String,
-        resetPasswordExpire: Date
+        resetPasswordExpire: Date,
+        profilePicture: {
+            type: String,
+            default: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/defaults/avatar-default.png'
+        }
     }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

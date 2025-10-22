@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { updateDriverStatus, getDriverStatus } = require('../controllers/driverControllers');
+const { updateDriverStatus, getDriverStatus, getAvailableDriversByVehicleType } = require('../controllers/driverControllers');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -9,5 +9,8 @@ const router = express.Router();
 router.put('/status', protect, updateDriverStatus);
 
 router.get('/status/:driverId', protect, getDriverStatus);
+
+// Get available drivers by vehicle type
+router.get('/available', protect, getAvailableDriversByVehicleType);
 
 module.exports = router;

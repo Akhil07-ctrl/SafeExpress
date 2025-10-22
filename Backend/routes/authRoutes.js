@@ -1,8 +1,12 @@
 const express = require('express');
+const multer = require('multer');
 
 const { register, login, getCurrentUser, logout, forgotPassword, resetPassword, directResetPassword } = require('../controllers/authControllers');
+const { updateProfile, updatePassword, uploadProfilePicture } = require('../controllers/profileControllers');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 const User = require('../models/user');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -26,5 +30,10 @@ router.get('/logout', protect, logout);
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword/:token', resetPassword);
 router.post('/directresetpassword', directResetPassword);
+
+// Profile update routes
+router.put('/updateprofile', protect, updateProfile);
+router.put('/updatepassword', protect, updatePassword);
+router.post('/upload-profile-picture', protect, upload.single('profilePicture'), uploadProfilePicture);
 
 module.exports = router;

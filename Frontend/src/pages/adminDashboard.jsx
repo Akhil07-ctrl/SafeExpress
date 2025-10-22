@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { toast } from "react-toastify";
 
 import api from "../utils/api";
 import Navbar from "../components/layout/navbar";
 import AdminCreateDeliveryModal from "../components/AdminCreateDeliveryModal";
-import { CardSkeleton, MapSkeleton, TableSkeleton } from "../components/SkeletonLoader";
-import { getRoute, getBoundsForCoordinates, createCustomIcon, getStatusColor } from "../utils/mapUtils";
+import { CardSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { validateVehicleForm } from "../utils/validation";
 
 const socket = io(import.meta.env.VITE_SOCKET_URL || "https://safeexpress.onrender.com");
@@ -16,11 +14,9 @@ const AdminDashboard = ({ user }) => {
   // Data states
   const [vehicles, setVehicles] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
-  const [activeDeliveries, setActiveDeliveries] = useState([]);
+
   const [drivers, setDrivers] = useState([]);
   // UI states
-  const [mapBounds, setMapBounds] = useState(null);
-  const [routeDetails, setRouteDetails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Form states
@@ -28,23 +24,13 @@ const AdminDashboard = ({ user }) => {
   const [vehicleType, setVehicleType] = useState("");
   const [vehicleCapacity, setVehicleCapacity] = useState("");
   const [totalRevenue, setTotalRevenue] = useState(0);
+  // Address expansion states
+  const [expandedAddresses, setExpandedAddresses] = useState({});
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const fetchDeliveryRoute = async (delivery) => {
-    if (!delivery) return;
-    try {
-      const route = await getRoute(
-        delivery.pickupCords.lat,
-        delivery.pickupCords.lng,
-        delivery.dropCords.lat,
-        delivery.dropCords.lng
-      );
-      if (route) {
-        setRouteDetails(prev => ({ ...prev, [delivery._id]: route }));
-      }
-    } catch (error) {
-      console.error('Error calculating route:', error);
-    }
-  };
+
 
   // Fetch all vehicles and deliveries
   const fetchData = async () => {
@@ -65,18 +51,7 @@ const AdminDashboard = ({ user }) => {
       const revenue = paidDeliveries.reduce((sum, d) => sum + d.baseFare, 0);
       setTotalRevenue(revenue);
 
-      // Filter active deliveries
-      const activeDelivs = deliveriesRes.data.filter(d => d.status === 'on route');
-      setActiveDeliveries(activeDelivs);
 
-      // Set map bounds if there are active deliveries
-      if (activeDelivs.length > 0) {
-        const coordinates = activeDelivs.flatMap(delivery => [
-          { lat: delivery.pickupCords.lat, lng: delivery.pickupCords.lng },
-          { lat: delivery.dropCords.lat, lng: delivery.dropCords.lng }
-        ]);
-        setMapBounds(getBoundsForCoordinates(coordinates));
-      }
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || 'Error fetching data');
@@ -100,10 +75,7 @@ const AdminDashboard = ({ user }) => {
     };
   }, []);
 
-  // Fetch routes for active deliveries
-  useEffect(() => {
-    activeDeliveries.forEach(fetchDeliveryRoute);
-  }, [activeDeliveries]);
+
 
   // Calculate statistics
   const totalVehicles = vehicles.length;
@@ -111,6 +83,17 @@ const AdminDashboard = ({ user }) => {
   const pendingCount = deliveries.filter(d => d.status === 'pending').length;
   const onRouteCount = deliveries.filter(d => d.status === 'on route').length;
   const deliveredCount = deliveries.filter(d => d.status === 'delivered').length;
+
+  // Toggle address expansion
+  const toggleAddress = (deliveryId, addressType) => {
+    setExpandedAddresses(prev => ({
+      ...prev,
+      [deliveryId]: {
+        ...prev[deliveryId],
+        [addressType]: !prev[deliveryId]?.[addressType]
+      }
+    }));
+  };
 
   // Add Vehicle
   const handleAddVehicle = async (e) => {
@@ -162,8 +145,7 @@ const AdminDashboard = ({ user }) => {
             {/* Overview cards skeleton */}
             <CardSkeleton count={5} />
 
-            {/* Map skeleton */}
-            <MapSkeleton />
+
 
             {/* Add Vehicle skeleton */}
             <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
@@ -233,86 +215,7 @@ const AdminDashboard = ({ user }) => {
             </div>
           </div>
 
-          {/* Delivery Map Overview */}
-          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900">Active Deliveries Map</h3>
-            <div className="h-[300px] sm:h-[400px] lg:h-[500px] rounded-lg overflow-hidden border border-gray-200">
-              <MapContainer
-                center={[17.385044, 78.486671]}
-                zoom={12}
-                className="h-full w-full"
-                bounds={mapBounds}
-                whenCreated={(map) => {
-                  if (mapBounds) {
-                    map.fitBounds(mapBounds);
-                  }
-                }}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                {activeDeliveries.map(delivery => (
-                  <div key={delivery._id}>
-                    {/* Pickup Marker */}
-                    <Marker
-                      position={[delivery.pickupCords.lat, delivery.pickupCords.lng]}
-                      icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
-                      eventHandlers={{
-                        click: () => fetchDeliveryRoute(delivery)
-                      }}
-                    >
-                      <Popup>
-                        <div className="text-sm">
-                          <h3 className="font-medium">Pickup: {delivery.pickupLocation}</h3>
-                          <p>Customer: {delivery.customerName}</p>
-                          <p>Time: {new Date(delivery.pickupTime).toLocaleString()}</p>
-                        </div>
-                      </Popup>
-                    </Marker>
-
-                    {/* Drop Marker */}
-                    <Marker
-                      position={[delivery.dropCords.lat, delivery.dropCords.lng]}
-                      icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
-                    >
-                      <Popup>
-                        <div className="text-sm">
-                          <h3 className="font-medium">Drop: {delivery.dropLocation}</h3>
-                          <p>Status: {delivery.status}</p>
-                          <p>Time: {new Date(delivery.dropTime).toLocaleString()}</p>
-                        </div>
-                      </Popup>
-                    </Marker>
-
-                    {/* Route Line */}
-                    {routeDetails[delivery._id]?.route && (
-                      <Polyline
-                        positions={routeDetails[delivery._id].route.map(([lng, lat]) => [lat, lng])}
-                        color={getStatusColor(delivery.status)}
-                        weight={3}
-                        opacity={0.6}
-                      />
-                    )}
-                  </div>
-                ))}
-              </MapContainer>
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: getStatusColor('pending') }} />
-                <span>Pending</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: getStatusColor('on route') }} />
-                <span>On Route</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: getStatusColor('delivered') }} />
-                <span>Delivered</span>
-              </div>
-            </div>
-          </div>
 
           {/* Add Vehicle */}
           <section className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
@@ -375,26 +278,129 @@ const AdminDashboard = ({ user }) => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {[...deliveries].reverse().map((d) => (
-                    <tr key={d._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2">#{d._id.slice(-6)}</td>
-                      <td className="px-4 py-2">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</td>
-                      <td className="px-4 py-2">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</td>
-                      <td className="px-4 py-2">{d.assignedDriver?.name}</td>
-                      <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
-                      <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
-                      <td className="px-4 py-2">{d.customerName}</td>
-                      <td className="px-4 py-2">{d.customerMobile}</td>
-                      <td className="px-4 py-2">
-                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
-                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
-                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
-                      </td>
-                    </tr>
-                  ))}
+                  {[...deliveries]
+                    .reverse()
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((d) => {
+                    const pickupAddress = d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`;
+                    const dropAddress = d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`;
+                    const isPickupExpanded = expandedAddresses[d._id]?.pickup;
+                    const isDropExpanded = expandedAddresses[d._id]?.drop;
+
+                    return (
+                      <tr key={d._id} className="hover:bg-gray-50">
+                        <td className="px-4 py-2">#{d._id.slice(-6)}</td>
+                        <td className="px-4 py-2">
+                          {pickupAddress.length > 40 ? (
+                            <div>
+                              {isPickupExpanded ? (
+                                <div>
+                                  {pickupAddress}
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'pickup')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show less ↑
+                                  </button>
+                                </div>
+                              ) : (
+                                <div>
+                                  {pickupAddress.slice(0, 40)}...
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'pickup')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show more →
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            pickupAddress
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {dropAddress.length > 40 ? (
+                            <div>
+                              {isDropExpanded ? (
+                                <div>
+                                  {dropAddress}
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'drop')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show less ↑
+                                  </button>
+                                </div>
+                              ) : (
+                                <div>
+                                  {dropAddress.slice(0, 40)}...
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'drop')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show more →
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            dropAddress
+                          )}
+                        </td>
+                        <td className="px-4 py-2">{d.assignedDriver?.name}</td>
+                        <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
+                        <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
+                        <td className="px-4 py-2">{d.customerName}</td>
+                        <td className="px-4 py-2">{d.customerMobile}</td>
+                        <td className="px-4 py-2">
+                          {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                          {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                          {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {deliveries.length > itemsPerPage && (
+              <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+                <div className="flex items-center">
+                  <p className="text-sm text-gray-700">
+                    Showing{' '}
+                    <span className="font-medium">
+                      {Math.min((currentPage - 1) * itemsPerPage + 1, deliveries.length)}
+                    </span>{' '}
+                    to{' '}
+                    <span className="font-medium">
+                      {Math.min(currentPage * itemsPerPage, deliveries.length)}
+                    </span>{' '}
+                    of{' '}
+                    <span className="font-medium">{deliveries.length}</span>{' '}
+                    results
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(deliveries.length / itemsPerPage)))}
+                    disabled={currentPage === Math.ceil(deliveries.length / itemsPerPage)}
+                    className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Admin Create Delivery Modal */}

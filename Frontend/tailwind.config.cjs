@@ -4,6 +4,7 @@ module.exports = {
 		"./index.html",
 		"./src/**/*.{js,ts,jsx,tsx}",
 	],
+	darkMode: 'class',
 	theme: {
 		extend: {
 			colors: {
@@ -15,6 +16,7 @@ module.exports = {
 			},
 			animation: {
 				fadeInUp: 'fadeInUp 0.3s ease-out',
+				'spin-slow': 'spin 3s linear infinite',
 			},
 			keyframes: {
 				fadeInUp: {

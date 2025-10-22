@@ -21,6 +21,7 @@ const OrderRequestReviewModal = ({
         dropLat: "",
         dropLng: "",
         dropTime: "",
+        baseFare: "",
     });
     const [rejectReason, setRejectReason] = useState("");
     const [activePoint, setActivePoint] = useState("pickup");
@@ -86,21 +87,30 @@ const OrderRequestReviewModal = ({
                     parseFloat(dropLng)
                 );
 
+                let fare = 0;
                 if (routeData) {
                     setRouteCoordinates(routeData.route);
                     setDistance(routeData.distance);
-                    setEstimatedFare(calculateFare(routeData.distance, request.vehicleType));
+                    fare = calculateFare(routeData.distance, request.vehicleType);
+                    setEstimatedFare(fare);
                 } else {
                     // Fallback to straight-line distance if route calculation fails
                     setRouteCoordinates([]);
                     setDistance(straightDistance);
-                    setEstimatedFare(calculateFare(straightDistance, request.vehicleType));
+                    fare = calculateFare(straightDistance, request.vehicleType);
+                    setEstimatedFare(fare);
                 }
+
+                // Auto-fill base fare
+                setAssignData(prev => ({
+                    ...prev,
+                    baseFare: fare.toFixed(2)
+                }));
             }
         };
 
         updateRouteAndFare();
-    }, [assignData, request.vehicleType]);
+    }, [assignData.pickupLat, assignData.pickupLng, assignData.dropLat, assignData.dropLng, request.vehicleType]);
 
     const handleClose = () => {
         setAssignData({
@@ -111,6 +121,7 @@ const OrderRequestReviewModal = ({
             dropLat: "",
             dropLng: "",
             dropTime: "",
+            baseFare: "",
         });
         setRejectReason("");
         setActivePoint("pickup");
@@ -418,6 +429,18 @@ const OrderRequestReviewModal = ({
                                 )}
                             </div>
                         )}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Base Fare (₹) *
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={assignData.baseFare}
+                                readOnly
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-700 cursor-not-allowed"
+                            />
+                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Drop Time *

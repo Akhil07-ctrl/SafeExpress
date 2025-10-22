@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-import WelcomePage from "../components/layout/welcomePage";
+import WelcomePage from "../components/layout/welcomePage.jsx";
 import Register from "../components/auth/register";
 import Login from "../components/auth/login";
 import ForgotPassword from "../components/auth/forgotPassword";
@@ -20,7 +20,10 @@ import Blog from "../pages/blog";
 import Docs from "../pages/docs";
 import API from "../pages/api";
 import Payment from "../pages/payment";
+import PrivacyPolicy from "../components/legal/PrivacyPolicy";
+import TermsOfService from "../components/legal/TermsOfService";
 import ProtectedRoute from "../components/protectedRoute/protectedRoute";
+import UserProfile from "../components/profile/UserProfile";
 import api from "../utils/api";
 
 const AppRoutes = () => {
@@ -64,6 +67,17 @@ const AppRoutes = () => {
         <Route path="/api" element={<API />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/payment" element={<Payment user={user} />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        {/* Protected Routes */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute user={user} allowedRoles={["admin", "customer", "driver"]}>
+              <UserProfile user={user} setUser={setUser} />
+            </ProtectedRoute>
+          }
+        />
         {/* Authentication */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login setUser={setUser} />} />

@@ -36,7 +36,7 @@ const Login = ({ setUser }) => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-2 sm:px-4" style={{ backgroundImage: "url('https://res.cloudinary.com/dgsmgz8zl/image/upload/v1759471113/Gemini_Generated_Image_mylwunmylwunmylw_zac7dw.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="w-full max-w-md bg-white shadow-xl rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8">
         {/* Back button */}
-        <Link to="/" onClick={() => window.location.href = "/"} className="absolute top-4 left-4 text-gray-700 hover:text-gray-900 flex items-center space-x-1">
+        <Link to="/" onClick={() => window.location.href = "/"} className="absolute top-4 left-4 text-black hover:text-gray-900 flex items-center space-x-1">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>

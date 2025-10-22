@@ -184,22 +184,28 @@ const Careers = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobOpenings.map((job, index) => (
               <div key={index} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg hover:scale-105 hover:border-indigo-300 hover:border-2 transition-all duration-300">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
-                  <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                    {job.type}
-                  </span>
+                <div className="flex flex-col space-y-2 mb-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 flex-shrink">{job.title}</h3>
+                    <span className="flex-shrink-0 bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap">
+                      {job.type}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Department:</span> {job.department}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Location:</span> {job.location}
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-1">
-                    <span className="font-medium">Department:</span> {job.department}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Location:</span> {job.location}
-                  </p>
-                </div>
-                <p className="text-gray-700 mb-4">{job.description}</p>
-                <button type="button" onClick={() => window.open(`mailto:info@safeexpress.com?subject=Job%20Application:%20${job.title}&body=${encodeURIComponent(job.description)}`, '_blank')} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
+                <p className="text-gray-700 mb-4 text-sm sm:text-base">{job.description}</p>
+                <button 
+                  type="button" 
+                  onClick={() => window.open(`mailto:info@safeexpress.com?subject=Job%20Application:%20${job.title}&body=${encodeURIComponent(job.description)}`, '_blank')} 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+                >
                   Apply Now
                 </button>
               </div>

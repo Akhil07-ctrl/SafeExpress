@@ -56,7 +56,38 @@ const getDriverStatus = async (req, res) => {
     }
 };
 
+const getAvailableDriversByVehicleType = async (req, res) => {
+    try {
+        const { vehicleType } = req.query;
+        console.log('Fetching available drivers for vehicle type:', vehicleType);
+
+        const query = {
+            role: 'driver',
+            driverStatus: 'available',
+        };
+
+        if (vehicleType) {
+            query.vehicleTypes = vehicleType;
+        }
+
+        const drivers = await User.find(query)
+            .select('name email profilePicture vehicleTypes driverStatus')
+            .sort('name');
+
+        console.log(`Found ${drivers.length} available drivers for vehicle type:`, vehicleType);
+
+        res.json({
+            success: true,
+            drivers
+        });
+    } catch (error) {
+        console.error('Error fetching available drivers:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     updateDriverStatus,
-    getDriverStatus
+    getDriverStatus,
+    getAvailableDriversByVehicleType
 };

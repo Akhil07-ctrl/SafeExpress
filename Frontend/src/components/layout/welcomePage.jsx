@@ -58,28 +58,28 @@ const WelcomePage = () => {
             review: "The analytics dashboard provides incredible insights. We've optimized our fleet utilization and reduced fuel costs significantly. Excellent support team too!"
         },
         {
-            profileImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
+            profileImage: "https://images.unsplash.com/photo-1604072366595-e75dc92d6bdc?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
             name: "Emily Chen",
             title: "CEO, FastDelivery Co.",
             rating: 5,
             review: "Since implementing SafeExpress, our on-time delivery rate has improved from 85% to 98%. The real-time tracking keeps our customers informed and happy."
         },
         {
-            profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
+            profileImage: "https://images.unsplash.com/photo-1639747280929-e84ef392c69a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
             name: "James Davis",
             title: "Fleet Manager, Global Logistics",
             rating: 5,
             review: "SafeExpress's route optimization has saved us thousands in fuel costs annually. The intuitive interface makes it easy for our drivers to stay on track."
         },
         {
-            profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=64&h=64&fit=crop&crop=face",
+            profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=688",
             name: "Anna Lee",
             title: "Supply Chain Director, MegaMart",
             rating: 5,
             review: "The comprehensive reporting features have transformed how we analyze our logistics performance. Data-driven decisions have never been easier."
         },
         {
-            profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=64&h=64&fit=crop&crop=face",
+            profileImage: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170",
             name: "Robert Kim",
             title: "Operations VP, Express Solutions",
             rating: 5,
@@ -150,7 +150,7 @@ const WelcomePage = () => {
                 <section className="relative h-[80vh] flex items-center justify-center text-white overflow-hidden">
                     {/* Background Video */}
                     <video
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover dark:opacity-80"
                         src="/videos/logistics-bg1.mp4"
                         autoPlay
                         loop
@@ -159,21 +159,40 @@ const WelcomePage = () => {
                     />
 
                     {/* Overlay (to make text readable) */}
-                    <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                    <div className="absolute inset-0 bg-black bg-opacity-50 dark:bg-opacity-70"></div>
 
                     {/* Content */}
                     <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
-                        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                        <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
                             Revolutionize Your Logistics Management
                         </h1>
-                        <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+                        <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-gray-100 dark:text-gray-200">
                             Streamline your fleet operations with real-time tracking, efficient routing, and comprehensive analytics for optimal performance.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                            <button onClick={() => { navigate('/register') }} className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors duration-200">
+                            <button
+                                onClick={() => { navigate('/register') }}
+                                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold 
+                                    transform transition-all duration-300 ease-in-out 
+                                    hover:bg-white hover:text-indigo-600 dark:hover:text-indigo-500 hover:scale-105 
+                                    hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] 
+                                    dark:hover:shadow-[0_0_20px_rgba(99,102,241,0.6)]
+                                    dark:hover:border-indigo-400 dark:hover:bg-indigo-400/10
+                                    active:scale-95"
+                            >
                                 Get Started
                             </button>
-                            <Link to="/about" onClick={() => window.location.href = "/about"} className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors duration-200">
+                            <Link
+                                to="/about"
+                                onClick={() => window.location.href = "/about"}
+                                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold 
+                                    transform transition-all duration-300 ease-in-out 
+                                    hover:bg-white hover:text-indigo-600 dark:hover:text-indigo-500 hover:scale-105 
+                                    hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] 
+                                    dark:hover:shadow-[0_0_20px_rgba(99,102,241,0.6)]
+                                    dark:hover:border-indigo-400 dark:hover:bg-indigo-400/10
+                                    active:scale-95"
+                            >
                                 Learn More
                             </Link>
                         </div>
@@ -240,7 +259,7 @@ const WelcomePage = () => {
                     ref={statsRef}
                     className="py-20 bg-cover bg-center text-white relative"
                     style={{
-                        backgroundImage: `url('https://plus.unsplash.com/premium_photo-1661503393312-24893a32ca6b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170')`
+                        backgroundImage: `url('https://e3.365dm.com/19/10/1600x900/skynews-handshake-business_4801338.jpg?20191011021750')`
                     }}
                 >
                     <div className="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -516,7 +535,7 @@ const WelcomePage = () => {
                                 ].map((faq, index) => (
                                     <div key={index} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                                         <button
-                                            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+                                            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                                             onClick={() => {
                                                 const content = document.getElementById(`faq-content-${index}`);
                                                 const icon = document.getElementById(`faq-icon-${index}`);
@@ -562,13 +581,13 @@ const WelcomePage = () => {
                 </section>
 
                 {/* Customer Reviews Section */}
-                <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+                <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                                 What Our Customers Say
                             </h2>
-                            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                                 Real experiences from businesses that have transformed their logistics with SafeExpress.
                             </p>
                         </div>
@@ -585,16 +604,16 @@ const WelcomePage = () => {
                                 >
                                     {reviews.map((review, index) => (
                                         <div key={index} className="w-full flex-shrink-0 px-4">
-                                            <div className="bg-white p-8 md:p-12 rounded-xl shadow-lg text-center">
+                                            <div className="bg-white dark:bg-gray-800 p-8 md:p-12 rounded-xl shadow-lg text-center">
                                                 <div className="flex items-center justify-center mb-6">
                                                     <img
                                                         src={review.profileImage}
                                                         alt={`${review.name} profile`}
-                                                        className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-gray-200"
+                                                        className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-gray-200 dark:border-gray-600"
                                                     />
                                                     <div className="text-left">
-                                                        <h4 className="text-xl font-semibold text-gray-900">{review.name}</h4>
-                                                        <p className="text-gray-600">{review.title}</p>
+                                                        <h4 className="text-xl font-semibold text-gray-900 dark:text-white">{review.name}</h4>
+                                                        <p className="text-gray-600 dark:text-gray-400">{review.title}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex justify-center mb-6">
@@ -604,7 +623,7 @@ const WelcomePage = () => {
                                                         </svg>
                                                     ))}
                                                 </div>
-                                                <blockquote className="text-lg text-gray-700 italic leading-relaxed">
+                                                <blockquote className="text-lg text-gray-700 dark:text-gray-300 italic leading-relaxed">
                                                     "{review.review}"
                                                 </blockquote>
                                             </div>
@@ -617,7 +636,7 @@ const WelcomePage = () => {
                             <div className="flex justify-center mt-8 space-x-4">
                                 <button
                                     onClick={prevReview}
-                                    className="bg-white hover:bg-gray-50 text-indigo-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
+                                    className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-indigo-600 dark:text-indigo-400 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                     aria-label="Previous review"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -632,8 +651,8 @@ const WelcomePage = () => {
                                             key={index}
                                             onClick={() => setCurrentReviewIndex(index)}
                                             className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentReviewIndex
-                                                ? 'bg-indigo-600'
-                                                : 'bg-gray-300 hover:bg-gray-400'
+                                                ? 'bg-indigo-600 dark:bg-indigo-400'
+                                                : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
                                                 }`}
                                             aria-label={`Go to review ${index + 1}`}
                                         />
@@ -642,7 +661,7 @@ const WelcomePage = () => {
 
                                 <button
                                     onClick={nextReview}
-                                    className="bg-white hover:bg-gray-50 text-indigo-600 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
+                                    className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-indigo-600 dark:text-indigo-400 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                     aria-label="Next review"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

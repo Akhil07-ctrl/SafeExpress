@@ -24,6 +24,11 @@ const DriverDashboard = ({ user }) => {
   const [routeDetails, setRouteDetails] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Address expansion states
+  const [expandedAddresses, setExpandedAddresses] = useState({});
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Calculate stats
   const totalDeliveries = deliveries.length;
@@ -83,13 +88,13 @@ const DriverDashboard = ({ user }) => {
   // Calculate route and set map bounds
   useEffect(() => {
     const calculateRouteAndBounds = async () => {
-      if (deliveries.length > 0 && currentLocation.lat !== 0) {
+      if (deliveries.length > 0) {
         const activeDelivery = deliveries[deliveries.length - 1];
         if (activeDelivery.status !== 'delivered') {
-          // Get route details
+          // Get route details from pickup to drop
           const route = await getRoute(
-            currentLocation.lat,
-            currentLocation.lng,
+            activeDelivery.pickupCords.lat,
+            activeDelivery.pickupCords.lng,
             activeDelivery.dropCords.lat,
             activeDelivery.dropCords.lng
           );
@@ -97,10 +102,12 @@ const DriverDashboard = ({ user }) => {
 
           // Calculate bounds
           const coordinates = [
-            { lat: currentLocation.lat, lng: currentLocation.lng },
             { lat: activeDelivery.pickupCords.lat, lng: activeDelivery.pickupCords.lng },
             { lat: activeDelivery.dropCords.lat, lng: activeDelivery.dropCords.lng }
           ];
+          if (currentLocation.lat !== 0) {
+            coordinates.push({ lat: currentLocation.lat, lng: currentLocation.lng });
+          }
           setMapBounds(getBoundsForCoordinates(coordinates));
         }
       }
@@ -137,6 +144,17 @@ const DriverDashboard = ({ user }) => {
       return () => navigator.geolocation.clearWatch(watchId);
     }
   }, [deliveries, user._id]);
+
+  // Toggle address expansion
+  const toggleAddress = (deliveryId, addressType) => {
+    setExpandedAddresses(prev => ({
+      ...prev,
+      [deliveryId]: {
+        ...prev[deliveryId],
+        [addressType]: !prev[deliveryId]?.[addressType]
+      }
+    }));
+  };
 
   // Update delivery status
   const updateStatus = async (deliveryId, newStatus) => {
@@ -210,43 +228,89 @@ const DriverDashboard = ({ user }) => {
 
         {/* Latest Delivery */}
         {deliveries.length > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
-            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900">Latest Delivery</h4>
+          <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-xl shadow p-4 mb-6">
+            <h4 className="text-md font-semibold mb-2 dark:text-gray-100">Latest Delivery</h4>
             {(() => {
               const d = deliveries[deliveries.length - 1];
               return (
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-4">
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Pickup</p>
-                      <p className="text-sm text-gray-900 truncate">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    <div>
+                      <span className="text-gray-500">Pickup:</span>
+                      {(() => {
+                        const pickupAddress = d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`;
+                        const isPickupExpanded = expandedAddresses[d._id]?.pickup;
+                        return pickupAddress.length > 40 ? (
+                          <div className="inline">
+                            {isPickupExpanded ? (
+                              <span>
+                                {' '}{pickupAddress}
+                                <button
+                                  onClick={() => toggleAddress(d._id, 'pickup')}
+                                  className="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors duration-200"
+                                >
+                                  show less ↑
+                                </button>
+                              </span>
+                            ) : (
+                              <span>
+                                {' '}{pickupAddress.slice(0, 40)}...
+                                <button
+                                  onClick={() => toggleAddress(d._id, 'pickup')}
+                                  className="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors duration-200"
+                                >
+                                  show more →
+                                </button>
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span> {pickupAddress}</span>
+                        );
+                      })()}
                     </div>
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Drop</p>
-                      <p className="text-sm text-gray-900 truncate">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</p>
+                    <div>
+                      <span className="text-gray-500">Drop:</span>
+                      {(() => {
+                        const dropAddress = d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`;
+                        const isDropExpanded = expandedAddresses[d._id]?.drop;
+                        return dropAddress.length > 40 ? (
+                          <div className="inline">
+                            {isDropExpanded ? (
+                              <span>
+                                {' '}{dropAddress}
+                                <button
+                                  onClick={() => toggleAddress(d._id, 'drop')}
+                                  className="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors duration-200"
+                                >
+                                  show less ↑
+                                </button>
+                              </span>
+                            ) : (
+                              <span>
+                                {' '}{dropAddress.slice(0, 40)}...
+                                <button
+                                  onClick={() => toggleAddress(d._id, 'drop')}
+                                  className="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors duration-200"
+                                >
+                                  show more →
+                                </button>
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span> {dropAddress}</span>
+                        );
+                      })()}
                     </div>
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Customer</p>
-                      <p className="text-sm text-gray-900">{d.customerName}</p>
-                    </div>
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Phone</p>
-                      <p className="text-sm text-gray-900">{d.customerMobile}</p>
-                    </div>
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Pickup Time</p>
-                      <p className="text-sm text-gray-900">{new Date(d.pickupTime).toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Drop Time</p>
-                      <p className="text-sm text-gray-900">{new Date(d.dropTime).toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white rounded-md p-3">
-                      <p className="text-xs text-gray-500 font-medium">Status</p>
-                      <p className="text-sm text-gray-900 capitalize">{d.status}</p>
-                    </div>
+                    <p><span className="text-gray-500">Customer:</span> {d.customerName}</p>
+                    <p><span className="text-gray-500">Mobile:</span> {d.customerMobile}</p>
+                    <p><span className="text-gray-500">Pickup Time:</span> {new Date(d.pickupTime).toLocaleString()}</p>
+                    <p><span className="text-gray-500">Drop Time:</span> {new Date(d.dropTime).toLocaleString()}</p>
+                    <p><span className="text-gray-500">Status:</span> {d.status}</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-3">
                     {d.status === "pending" && (
                       <button
                         onClick={() => updateStatus(d._id, "on route")}
@@ -264,74 +328,113 @@ const DriverDashboard = ({ user }) => {
                       </button>
                     )}
                   </div>
-                  <div className="h-[250px] sm:h-[350px] lg:h-[400px] rounded-lg overflow-hidden border border-gray-200">
-                    <MapContainer
-                      bounds={mapBounds}
-                      center={mapBounds ? undefined : [17.385044, 78.486671]}
-                      zoom={mapBounds ? undefined : 11}
-                      className="h-full w-full"
-                    >
-                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                      {/* Driver's current location */}
-                      {currentLocation.lat !== 0 && (
+                  <div className="mt-4 relative" style={{ height: '400px', zIndex: 1 }}>
+                    {routeDetails?.route ? (
+                      <MapContainer
+                        bounds={mapBounds || undefined}
+                        style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
+                        className="border border-gray-200"
+                      >
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                        {currentLocation.lat !== 0 && (
+                          <Marker
+                            position={[currentLocation.lat, currentLocation.lng]}
+                            icon={driverIcon}
+                          >
+                            <Popup>
+                              <div className="text-center">
+                                <h3 className="font-medium">Your Location</h3>
+                                <p className="text-sm text-gray-600">
+                                  Last updated: {new Date().toLocaleTimeString()}
+                                </p>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        )}
+
+                        {routeDetails.route.length > 0 && (
+                          <Polyline
+                            positions={routeDetails.route.map(([lng, lat]) => [lat, lng])}
+                            color={getStatusColor(d.status)}
+                            weight={4}
+                            opacity={0.7}
+                          />
+                        )}
+
                         <Marker
-                          position={[currentLocation.lat, currentLocation.lng]}
-                          icon={driverIcon}
+                          position={[d.pickupCords.lat, d.pickupCords.lng]}
+                          icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
                         >
                           <Popup>
-                            <div className="text-center">
-                              <h3 className="font-medium">Your Location</h3>
-                              <p className="text-sm text-gray-600">
-                                Last updated: {new Date().toLocaleTimeString()}
-                              </p>
-                            </div>
+                            Pickup: {d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}
                           </Popup>
                         </Marker>
-                      )}
 
-                      {/* Route display */}
-                      {routeDetails?.route && (
+                        <Marker
+                          position={[d.dropCords.lat, d.dropCords.lng]}
+                          icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
+                        >
+                          <Popup>
+                            Drop: {d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}
+                          </Popup>
+                        </Marker>
+                      </MapContainer>
+                    ) : (
+                      <MapContainer
+                        center={[d.pickupCords.lat, d.pickupCords.lng]}
+                        zoom={13}
+                        style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
+                        className="border border-gray-200"
+                      >
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                        {currentLocation.lat !== 0 && (
+                          <Marker
+                            position={[currentLocation.lat, currentLocation.lng]}
+                            icon={driverIcon}
+                          >
+                            <Popup>
+                              <div className="text-center">
+                                <h3 className="font-medium">Your Location</h3>
+                                <p className="text-sm text-gray-600">
+                                  Last updated: {new Date().toLocaleTimeString()}
+                                </p>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        )}
+
                         <Polyline
-                          positions={routeDetails.route.map(([lng, lat]) => [lat, lng])}
+                          positions={[
+                            [d.pickupCords.lat, d.pickupCords.lng],
+                            [d.dropCords.lat, d.dropCords.lng]
+                          ]}
                           color={getStatusColor(d.status)}
-                          weight={4}
-                          opacity={0.7}
+                          weight={3}
+                          opacity={0.6}
                         />
-                      )}
 
-                      {/* Pickup location */}
-                      <Marker
-                        position={[d.pickupCords.lat, d.pickupCords.lng]}
-                        icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
-                      >
-                        <Popup>
-                          <div>
-                            <h3 className="font-medium">Pickup Location</h3>
-                            <p className="text-sm">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</p>
-                            <p className="text-xs text-gray-600 mt-1">
-                              {new Date(d.pickupTime).toLocaleString()}
-                            </p>
-                          </div>
-                        </Popup>
-                      </Marker>
+                        <Marker
+                          position={[d.pickupCords.lat, d.pickupCords.lng]}
+                          icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
+                        >
+                          <Popup>
+                            Pickup: {d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}
+                          </Popup>
+                        </Marker>
 
-                      {/* Drop location */}
-                      <Marker
-                        position={[d.dropCords.lat, d.dropCords.lng]}
-                        icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
-                      >
-                        <Popup>
-                          <div>
-                            <h3 className="font-medium">Drop Location</h3>
-                            <p className="text-sm">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</p>
-                            <p className="text-xs text-gray-600 mt-1">
-                              Expected arrival: {new Date(d.dropTime).toLocaleString()}
-                            </p>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    </MapContainer>
+                        <Marker
+                          position={[d.dropCords.lat, d.dropCords.lng]}
+                          icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
+                        >
+                          <Popup>
+                            Drop: {d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}
+                          </Popup>
+                        </Marker>
+                      </MapContainer>
+                    )}
                   </div>
                 </div>
               );
@@ -347,9 +450,9 @@ const DriverDashboard = ({ user }) => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Pickup</th>
-                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Drop</th>
-                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Vehicle</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drop</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
@@ -358,24 +461,125 @@ const DriverDashboard = ({ user }) => {
                 {[...deliveries]
                   .slice(0, -1)
                   .reverse()
-                  .map((d) => (
-                    <tr key={d._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2">#{d._id.slice(-6)}</td>
-                      <td className="px-4 py-2">{d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`}</td>
-                      <td className="px-4 py-2">{d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`}</td>
-                      <td className="px-4 py-2">{d.assignedDriver?.name}</td>
-                      <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
-                      <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
-                      <td className="px-4 py-2">
-                        {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
-                        {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
-                        {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
-                      </td>
-                    </tr>
-                  ))}
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((d) => {
+                    const pickupAddress = d.pickupLocation || `${d.pickupCords.lat.toFixed(4)}, ${d.pickupCords.lng.toFixed(4)}`;
+                    const dropAddress = d.dropLocation || `${d.dropCords.lat.toFixed(4)}, ${d.dropCords.lng.toFixed(4)}`;
+                    const isPickupExpanded = expandedAddresses[d._id]?.pickup;
+                    const isDropExpanded = expandedAddresses[d._id]?.drop;
+
+                    return (
+                      <tr key={d._id} className="hover:bg-gray-50">
+                        <td className="px-4 py-2">#{d._id.slice(-6)}</td>
+                        <td className="px-4 py-2">
+                          {pickupAddress.length > 40 ? (
+                            <div>
+                              {isPickupExpanded ? (
+                                <div>
+                                  {pickupAddress}
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'pickup')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show less ↑
+                                  </button>
+                                </div>
+                              ) : (
+                                <div>
+                                  {pickupAddress.slice(0, 40)}...
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'pickup')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show more →
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            pickupAddress
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {dropAddress.length > 40 ? (
+                            <div>
+                              {isDropExpanded ? (
+                                <div>
+                                  {dropAddress}
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'drop')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show less ↑
+                                  </button>
+                                </div>
+                              ) : (
+                                <div>
+                                  {dropAddress.slice(0, 40)}...
+                                  <button
+                                    onClick={() => toggleAddress(d._id, 'drop')}
+                                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                  >
+                                    show more →
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            dropAddress
+                          )}
+                        </td>
+                        <td className="px-4 py-2">{d.assignedDriver?.name}</td>
+                        <td className="px-4 py-2">{d.assignedDriver?.mobile}</td>
+                        <td className="px-4 py-2">{d.assignedVehicle?.numberPlate}</td>
+                        <td className="px-4 py-2">
+                          {d.status === "pending" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{d.status}</span> : null}
+                          {d.status === "on route" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{d.status}</span> : null}
+                          {d.status === "delivered" ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span> : null}
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {deliveries.length > 1 && deliveries.length - 1 > itemsPerPage && (
+            <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-700">
+                  Showing{' '}
+                  <span className="font-medium">
+                    {Math.min((currentPage - 1) * itemsPerPage + 1, deliveries.length - 1)}
+                  </span>{' '}
+                  to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * itemsPerPage, deliveries.length - 1)}
+                  </span>{' '}
+                  of{' '}
+                  <span className="font-medium">{deliveries.length - 1}</span>{' '}
+                  results
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil((deliveries.length - 1) / itemsPerPage)))}
+                  disabled={currentPage === Math.ceil((deliveries.length - 1) / itemsPerPage)}
+                  className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>

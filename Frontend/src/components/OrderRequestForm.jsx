@@ -243,7 +243,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       onClick={() => setActivePoint("pickup")}
                       className={`px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 ${activePoint === "pickup"
                         ? "bg-brand text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                         }`}
                     >
                       Set Pickup
@@ -253,7 +253,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       onClick={() => setActivePoint("drop")}
                       className={`px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 ${activePoint === "drop"
                         ? "bg-brand text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                         }`}
                     >
                       Set Drop
@@ -273,7 +273,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       <button
                         type="button"
                         onClick={() => geocode(searchPickup, "pickup")}
-                        className="px-3 sm:px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg text-sm sm:text-base font-medium transition-colors duration-200"
+                        className="px-3 sm:px-4 py-2 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-500 text-white rounded-lg text-sm sm:text-base font-medium transition-colors duration-200"
                       >
                         Find
                       </button>
@@ -289,7 +289,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                       <button
                         type="button"
                         onClick={() => geocode(searchDrop, "drop")}
-                        className="px-3 sm:px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg text-sm sm:text-base font-medium transition-colors duration-200"
+                        className="px-3 sm:px-4 py-2 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-500 text-white rounded-lg text-sm sm:text-base font-medium transition-colors duration-200"
                       >
                         Find
                       </button>
@@ -403,7 +403,7 @@ const OrderRequestForm = ({ user, onSuccess }) => {
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="w-full sm:w-auto px-4 sm:px-6 py-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base font-medium transition-colors duration-200"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 text-gray-600 dark:text-gray-400 dark:bg-gray-700 rounded-lg dark:hover:bg-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-sm sm:text-base font-medium transition-colors duration-200"
                   >
                     Cancel
                   </button>

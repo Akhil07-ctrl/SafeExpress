@@ -168,7 +168,7 @@ const Blog = () => {
             )}
 
             {/* Categories Filter */}
-            <div className="py-8 bg-gray-100">
+            <div className="py-8 bg-gray-100 dark:bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-wrap justify-center gap-4">
                         {categories.map((category) => (
@@ -176,8 +176,8 @@ const Blog = () => {
                                 key={category.id}
                                 onClick={() => setSelectedCategory(category.id)}
                                 className={`px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${selectedCategory === category.id
-                                    ? "bg-indigo-600 text-white"
-                                    : "bg-white text-gray-700 hover:bg-gray-50"
+                                    ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                                    : "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-100/15 dark:text-indigo-200 dark:hover:bg-indigo-100/25"
                                     }`}
                             >
                                 {category.name} ({category.count})
@@ -253,8 +253,14 @@ const Blog = () => {
                                 className="flex-1 px-4 py-3 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent border border-white placeholder-white text-white"
                             />
                             <button
-                                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors duration-200"
                                 onClick={() => toast.info("Subscription feature coming soon!")}
+                                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold 
+                                    transform transition-all duration-300 ease-in-out 
+                                    hover:bg-white hover:text-indigo-600 dark:hover:text-indigo-500 hover:scale-105 
+                                    hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] 
+                                    dark:hover:shadow-[0_0_20px_rgba(99,102,241,0.6)]
+                                    dark:hover:border-indigo-400 dark:hover:bg-indigo-400/10
+                                    active:scale-95"
                             >
                                 Subscribe
                             </button>

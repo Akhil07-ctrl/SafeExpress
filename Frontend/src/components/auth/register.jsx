@@ -40,7 +40,7 @@ const Register = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4" style={{ backgroundImage: "url('https://res.cloudinary.com/dgsmgz8zl/image/upload/v1759470817/ChatGPT_Image_Oct_3_2025_11_23_07_AM_haekyu.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="w-full max-w-md bg-white shadow-xl rounded-xl p-8">
         {/* Back button */}
-        <Link to="/" onClick={() => window.location.href = "/"} className="absolute top-4 left-4 text-gray-700 hover:text-gray-900 flex items-center space-x-1">
+        <Link to="/" onClick={() => window.location.href = "/"} className="absolute top-4 left-4 text-black hover:text-gray-900 flex items-center space-x-1">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>

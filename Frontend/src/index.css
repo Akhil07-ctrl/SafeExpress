@@ -1,5 +1,6 @@
 /* Leaflet CSS */
 @import url('https://unpkg.com/leaflet@1.9.3/dist/leaflet.css');
+@import './styles/theme.css';
 
 @tailwind base;
 @tailwind components;

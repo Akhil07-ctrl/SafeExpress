@@ -73,8 +73,22 @@ const createOrderRequest = async (req, res) => {
 // Get all order requests (Admin only)
 const getAllOrderRequests = async (req, res) => {
   try {
-    const { status } = req.query;
-    const filter = status ? { status } : {};
+    const { status, search } = req.query;
+    let filter = status ? { status } : {};
+
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      filter = {
+        ...filter,
+        $or: [
+          { customerName: searchRegex },
+          { customerMobile: searchRegex },
+          { pickupLocation: searchRegex },
+          { dropLocation: searchRegex },
+          { vehicleType: searchRegex }
+        ]
+      };
+    }
 
     const orderRequests = await OrderRequest.find(filter)
       .populate("customerId", "name email")
@@ -104,7 +118,7 @@ const getMyOrderRequests = async (req, res) => {
 const approveOrderRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assignedDriver, assignedVehicle, pickupCords, dropCords, dropTime } = req.body;
+    const { assignedDriver, assignedVehicle, pickupCords, dropCords, dropTime, baseFare } = req.body;
 
     const orderRequest = await OrderRequest.findById(id);
     if (!orderRequest) {
@@ -160,6 +174,7 @@ const approveOrderRequest = async (req, res) => {
       customerMobile: orderRequest.customerMobile,
       pickupTime: start,
       dropTime: end,
+      baseFare: baseFare || orderRequest.estimatedFare, // Use provided fare or fallback to estimated fare
     });
 
     // Update order request with coordinates and drop time

@@ -129,14 +129,15 @@ const Chatbot = () => {
   return (
     <>
       {/* Floating Button */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 md:p-4 shadow-lg transition-all duration-300 hover:scale-110"
-        >
-          <FaRobot size={20} className="md:w-6 md:h-6" />
-        </button>
-      </div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-4 right-4 md:right-6 p-3 md:p-4 rounded-full shadow-lg
+                  bg-blue-600 hover:bg-blue-700 text-white
+                  transform hover:scale-110 active:scale-95 transition-all duration-300 z-40
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        <FaRobot size={20} className="md:w-6 md:h-6" />
+      </button>
 
       {/* Chat Window */}
       {isOpen && (
@@ -192,19 +193,25 @@ const Chatbot = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t bg-white rounded-b-lg">
-            <div className="flex gap-2">
+          <div className="p-2 sm:p-4 border-t bg-white rounded-b-lg">
+            <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type your message..."
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="flex-1 min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg 
+                          px-2 sm:px-3 py-1.5 sm:py-2
+                          focus:outline-none focus:ring-2 focus:ring-blue-600
+                          placeholder:text-gray-400 placeholder:text-sm"
               />
               <button
                 onClick={handleSend}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white 
+                          px-2 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base 
+                          rounded-lg transition-colors whitespace-nowrap"
+                aria-label="Send message"
               >
                 Send
               </button>

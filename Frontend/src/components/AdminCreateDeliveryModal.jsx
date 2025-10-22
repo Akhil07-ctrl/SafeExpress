@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from "react-leaflet";
+import L from "leaflet";
 import { toast } from "react-toastify";
 
 import api from "../utils/api";
-import { createCustomIcon, calculateDistance, calculateFare } from "../utils/mapUtils";
+import { getRoute, calculateDistance, calculateFare } from "../utils/mapUtils";
 import { validateDeliveryForm } from "../utils/validation";
 
 const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicles }) => {
@@ -29,6 +30,7 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
   const [driverStatuses, setDriverStatuses] = useState({});
   const [distance, setDistance] = useState(0);
   const [estimatedFare, setEstimatedFare] = useState(0);
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
 
 
   // Fetch driver statuses
@@ -65,28 +67,50 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
     }
   }, [drivers, fetchDriverStatuses]);
 
-  // Calculate distance when pickup/drop coordinates change
+  // Calculate route and fare when coordinates change
   useEffect(() => {
-    if (formData.pickupLat && formData.pickupLng && formData.dropLat && formData.dropLng) {
-      const pickupCoords = { lat: Number(formData.pickupLat), lng: Number(formData.pickupLng) };
-      const dropCoords = { lat: Number(formData.dropLat), lng: Number(formData.dropLng) };
+    const updateRouteAndFare = async () => {
+      if (formData.pickupLat && formData.pickupLng && formData.dropLat && formData.dropLng) {
+        // Calculate straight-line distance
+        const straightDistance = calculateDistance(
+          parseFloat(formData.pickupLat),
+          parseFloat(formData.pickupLng),
+          parseFloat(formData.dropLat),
+          parseFloat(formData.dropLng)
+        );
 
-      const dist = calculateDistance(pickupCoords.lat, pickupCoords.lng, dropCoords.lat, dropCoords.lng);
-      setDistance(dist);
-    }
-  }, [formData.pickupLat, formData.pickupLng, formData.dropLat, formData.dropLng]);
+        // Get actual route
+        const routeData = await getRoute(
+          parseFloat(formData.pickupLat),
+          parseFloat(formData.pickupLng),
+          parseFloat(formData.dropLat),
+          parseFloat(formData.dropLng)
+        );
 
-  // Calculate fare when distance and vehicle are set
-  useEffect(() => {
-    if (distance > 0 && formData.assignedVehicle) {
-      const selectedVehicle = vehicles.find(v => v._id === formData.assignedVehicle);
-      if (selectedVehicle) {
-        const fare = calculateFare(distance, selectedVehicle.type);
-        setEstimatedFare(fare);
-        setFormData(prev => ({ ...prev, baseFare: fare.toFixed(2) }));
+        let fare = 0;
+        if (routeData) {
+          setRouteCoordinates(routeData.route);
+          setDistance(routeData.distance);
+          fare = calculateFare(routeData.distance, formData.assignedVehicle ? vehicles.find(v => v._id === formData.assignedVehicle)?.type : 'bike');
+          setEstimatedFare(fare);
+        } else {
+          // Fallback to straight-line distance if route calculation fails
+          setRouteCoordinates([]);
+          setDistance(straightDistance);
+          fare = calculateFare(straightDistance, formData.assignedVehicle ? vehicles.find(v => v._id === formData.assignedVehicle)?.type : 'bike');
+          setEstimatedFare(fare);
+        }
+
+        // Auto-fill base fare
+        setFormData(prev => ({
+          ...prev,
+          baseFare: fare.toFixed(2)
+        }));
       }
-    }
-  }, [distance, formData.assignedVehicle, vehicles]);
+    };
+
+    updateRouteAndFare();
+  }, [formData.pickupLat, formData.pickupLng, formData.dropLat, formData.dropLng, formData.assignedVehicle, vehicles]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -182,12 +206,12 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-gray-900">Create Delivery</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Create Delivery</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl"
           >
             &times;
           </button>
@@ -286,19 +310,19 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
               placeholder="Base Fare (₹)"
               name="baseFare"
               value={formData.baseFare}
-              onChange={handleChange}
+              readOnly
               required
               type="number"
               min="0"
               step="0.01"
-              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="rounded-lg border border-gray-300 px-3 py-2 bg-gray-100 cursor-not-allowed"
             />
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <button type="button" onClick={() => setActivePoint('pickup')} className={`px-3 py-1.5 rounded-lg border ${activePoint === 'pickup' ? 'bg-brand text-white border-brand' : 'border-gray-300'}`}>Set Pickup</button>
               <button type="button" onClick={() => setActivePoint('drop')} className={`px-3 py-1.5 rounded-lg border ${activePoint === 'drop' ? 'bg-brand text-white border-brand' : 'border-gray-300'}`}>Set Drop</button>
-              <span className="text-sm text-gray-500">Click on the map to set coordinates</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Click on the map to set coordinates</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex gap-2">
@@ -306,18 +330,18 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
                   placeholder="Search pickup address"
                   value={searchPickup}
                   onChange={(e) => setSearchPickup(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand"
                 />
-                <button type="button" onClick={() => geocode(searchPickup, 'pickup')} className="bg-gray-900 text-white rounded-lg px-3">Find</button>
+                <button type="button" onClick={() => geocode(searchPickup, 'pickup')} className="bg-gray-900 dark:bg-gray-700 text-white rounded-lg px-3">Find</button>
               </div>
               <div className="flex gap-2">
                 <input
                   placeholder="Search drop address"
                   value={searchDrop}
                   onChange={(e) => setSearchDrop(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand"
                 />
-                <button type="button" onClick={() => geocode(searchDrop, 'drop')} className="bg-gray-900 text-white rounded-lg px-3">Find</button>
+                <button type="button" onClick={() => geocode(searchDrop, 'drop')} className="bg-gray-900 dark:bg-gray-700 text-white rounded-lg px-3">Find</button>
               </div>
             </div>
             <div className="rounded-lg overflow-hidden border border-gray-200 h-[300px]">
@@ -328,30 +352,36 @@ const AdminCreateDeliveryModal = ({ isOpen, onClose, onSuccess, drivers, vehicle
               >
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <ClickSetter />
+                {routeCoordinates.length > 0 && (
+                  <Polyline
+                    positions={routeCoordinates.map(([lng, lat]) => [lat, lng])}
+                    color="#0066cc"
+                    weight={4}
+                    opacity={0.7}
+                  />
+                )}
                 {formData.pickupLat && formData.pickupLng && (
                   <Marker
-                    icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146778.png', 25)}
+                    icon={new L.Icon({
+                      iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+                      iconSize: [25, 41],
+                      iconAnchor: [12, 41]
+                    })}
                     position={[Number(formData.pickupLat), Number(formData.pickupLng)]}
                   >
-                    <Popup>
-                      <div className="text-sm">
-                        <h3 className="font-medium">Pickup Location</h3>
-                        <p>Coordinates: {formData.pickupLat}, {formData.pickupLng}</p>
-                      </div>
-                    </Popup>
+                    <Popup>Pickup</Popup>
                   </Marker>
                 )}
                 {formData.dropLat && formData.dropLng && (
                   <Marker
-                    icon={createCustomIcon('https://cdn-icons-png.flaticon.com/512/1146/1146869.png', 25)}
+                    icon={new L.Icon({
+                      iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+                      iconSize: [25, 41],
+                      iconAnchor: [12, 41]
+                    })}
                     position={[Number(formData.dropLat), Number(formData.dropLng)]}
                   >
-                    <Popup>
-                      <div className="text-sm">
-                        <h3 className="font-medium">Drop Location</h3>
-                        <p>Coordinates: {formData.dropLat}, {formData.dropLng}</p>
-                      </div>
-                    </Popup>
+                    <Popup>Drop</Popup>
                   </Marker>
                 )}
               </MapContainer>
