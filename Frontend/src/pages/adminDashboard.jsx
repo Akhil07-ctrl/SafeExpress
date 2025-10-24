@@ -48,7 +48,10 @@ const AdminDashboard = ({ user }) => {
 
       // Calculate total revenue from paid deliveries
       const paidDeliveries = deliveriesRes.data.filter(d => d.paymentStatus === 'paid');
-      const revenue = paidDeliveries.reduce((sum, d) => sum + d.baseFare, 0);
+      const revenue = paidDeliveries.reduce((sum, d) => {
+        const fare = Number(d.baseFare) || 0;
+        return sum + fare;
+      }, 0);
       setTotalRevenue(revenue);
 
 

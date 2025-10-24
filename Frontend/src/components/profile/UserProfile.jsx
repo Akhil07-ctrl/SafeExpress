@@ -76,8 +76,6 @@ const UserProfile = ({ user, setUser }) => {
                 ...prev,
                 profilePicture: response.data.profilePicture
             }));
-
-            toast.success('Profile picture updated successfully');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error updating profile picture');
         } finally {
@@ -124,7 +122,6 @@ const UserProfile = ({ user, setUser }) => {
             }
 
             setEditMode(false);
-            toast.success('Profile updated successfully');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error updating profile');
         } finally {
@@ -143,7 +140,7 @@ const UserProfile = ({ user, setUser }) => {
                         <div className="relative inline-block group">
                             <div className="w-36 h-36 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 p-1">
                                 <img
-                                    src={user?.profilePicture || 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/defaults/avatar-default.png'}
+                                    src={user?.profilePicture || 'https://img.freepik.com/premium-vector/user-icon-icon_1076610-59410.jpg'}
                                     alt="Profile"
                                     className="w-full h-full rounded-full object-cover border-4 border-white"
                                 />

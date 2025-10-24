@@ -11,20 +11,19 @@ const PaymentForm = ({ deliveryData, onClose, onPaymentSuccess }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const stripe = useStripe();
   const elements = useElements();
+  const amount = deliveryData?.amount ?? deliveryData?.baseFare ?? 0;
 
   const handlePayment = async () => {
     if (!stripe || !elements) return;
 
     setIsProcessing(true);
     try {
-      // Create payment intent
       const res = await api.post("/payments/create-delivery-payment-intent", {
         deliveryId: deliveryData.deliveryId
       });
 
       const { clientSecret } = res.data;
 
-      // Confirm payment with Stripe
       const { error } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
@@ -37,14 +36,13 @@ const PaymentForm = ({ deliveryData, onClose, onPaymentSuccess }) => {
       if (error) {
         toast.error(error.message);
       } else {
-        // Confirm payment on backend
         await api.post("/payments/confirm-delivery-payment", {
-          paymentIntentId: clientSecret.split('_secret_')[0], // Extract payment intent ID
+          paymentIntentId: clientSecret.split('_secret_')[0],
           deliveryId: deliveryData.deliveryId
         });
 
         toast.success("Payment successful!");
-        onPaymentSuccess();
+        onPaymentSuccess({ deliveryId: deliveryData.deliveryId });
         onClose();
       }
     } catch (err) {
@@ -66,7 +64,7 @@ const PaymentForm = ({ deliveryData, onClose, onPaymentSuccess }) => {
               <h4 className="font-medium text-gray-900 mb-2">Delivery Summary</h4>
               <div className="space-y-1 text-sm text-gray-600">
                 <p><span className="font-medium">Order ID:</span> #{deliveryData.deliveryId?.slice(-6)}</p>
-                <p><span className="font-medium">Amount:</span> ₹{Math.round(deliveryData.amount * 83)}</p>
+                <p><span className="font-medium">Amount:</span> ₹{amount}</p>
                 <p><span className="font-medium">Customer:</span> {deliveryData.customerName}</p>
               </div>
             </div>
@@ -104,7 +102,7 @@ const PaymentForm = ({ deliveryData, onClose, onPaymentSuccess }) => {
               disabled={isProcessing}
               className="flex-1 px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-lg disabled:opacity-50"
             >
-              {isProcessing ? 'Processing...' : `Pay ₹${Math.round(deliveryData.amount * 83)}`}
+              {isProcessing ? 'Processing...' : `Pay ₹${amount}`}
             </button>
           </div>
         </div>

@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
         resetPasswordExpire: Date,
         profilePicture: {
             type: String,
-            default: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/defaults/avatar-default.png'
+            default: 'https://img.freepik.com/premium-vector/user-icon-icon_1076610-59410.jpg'
         }
     }, { timestamps: true });
 

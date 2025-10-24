@@ -542,9 +542,21 @@ const CustomerDashboard = ({ user }) => {
                               <div className="flex flex-col gap-1">
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{d.status}</span>
                                 {d.paymentStatus === "paid" ? (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Paid</span>
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Paid</span>
                                 ) : (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Payment Pending</span>
+                                  <button
+                                    onClick={() => {
+                                      setShowPaymentPopup(true);
+                                      setPaymentData({
+                                        deliveryId: d._id,
+                                        customerName: user?.name,
+                                        amount: d.baseFare || 0
+                                      });
+                                    }}
+                                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200"
+                                  >
+                                    Pay Now
+                                  </button>
                                 )}
                               </div>
                             )}
